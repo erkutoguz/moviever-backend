@@ -2,6 +2,7 @@ package com.erkutoguz.moviever_backend.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -24,6 +25,24 @@ public class Movie {
 
     @ManyToMany(mappedBy = "movies")
     private Set<Watchlist> watchlists;
+
+    @ManyToMany(mappedBy = "likedMovies")
+    private Set<User> liked;
+
+    private int likeCount = 0;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @ManyToMany
     @JoinTable(
@@ -69,6 +88,14 @@ public class Movie {
         this.releaseYear = releaseYear;
     }
 
+    public int getLikeCount() {
+        return likeCount;
+    }
+
+    public void setLikeCount(int likeCount) {
+        this.likeCount = likeCount;
+    }
+
     public String getDirector() {
         return director;
     }
@@ -93,6 +120,14 @@ public class Movie {
         this.pictureUrl = pictureUrl;
     }
 
+    public Set<User> getLiked() {
+        return liked;
+    }
+
+    public void setLiked(Set<User> liked) {
+        this.liked = liked;
+    }
+
     public Set<Review> getReviews() {
         return reviews;
     }
@@ -107,5 +142,21 @@ public class Movie {
 
     public void setWatchlists(Set<Watchlist> watchlists) {
         this.watchlists = watchlists;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

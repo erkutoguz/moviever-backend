@@ -30,12 +30,12 @@ public class MovieController {
     }
 
     @GetMapping("/most-liked-movies")
-    public Set<MovieResponse> retrieveMostLikedMovies() {
+    public List<MovieResponse> retrieveMostLikedMovies() {
         return movieService.retrieveMostLikedMovies();
     }
 
     @GetMapping("/new-movies")
-    public Set<MovieResponse> retrieveNewMovies() {
+    public List<MovieResponse> retrieveNewMovies() {
         return movieService.retrieveNewMovies();
     }
 

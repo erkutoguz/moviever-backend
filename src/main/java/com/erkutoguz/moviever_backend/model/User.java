@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +51,24 @@ public class User implements UserDetails {
 //    @ManyToMany(mappedBy = "followers", fetch = FetchType.LAZY)
 //    private Set<User> follows;
 
+    @ManyToMany
+    @JoinTable(
+            name = "liked_movies",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "movie_id")
+    )
+    private Set<Movie> likedMovies;
+
+    @ManyToMany
+    @JoinTable(
+            name = "liked_reviews",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "review_id")
+    )
+    private Set<Review> likedReviews;
+
+
+
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Watchlist> watchlists;
 
@@ -59,7 +78,19 @@ public class User implements UserDetails {
     private boolean isAccountNonLocked;
 
     private String otp = UUID.randomUUID().toString();
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
     public User() {
     }
 
@@ -127,6 +158,22 @@ public class User implements UserDetails {
         this.about = about;
     }
 
+    public Set<Movie> getLikedMovies() {
+        return likedMovies;
+    }
+
+    public void setLikedMovies(Set<Movie> likedMovies) {
+        this.likedMovies = likedMovies;
+    }
+
+    public Set<Review> getLikedReviews() {
+        return likedReviews;
+    }
+
+    public void setLikedReviews(Set<Review> likedReviews) {
+        this.likedReviews = likedReviews;
+    }
+
     public Set<Review> getReviews() {
         return reviews;
     }
@@ -135,6 +182,21 @@ public class User implements UserDetails {
         this.reviews = reviews;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 //    public Set<User> getFollowers() {
 //        return followers;
 //    }
@@ -165,6 +227,31 @@ public class User implements UserDetails {
 
     public void setOtp(String otp) {
         this.otp = otp;
+    }
+
+    public void likeMovie(Movie movie) {
+        this.likedMovies.add(movie);
+        movie.getLiked().add(this);
+        movie.setLikeCount(movie.getLikeCount() + 1);
+    }
+
+    public void unlikeMovie(Movie movie) {
+        this.likedMovies.removeIf(m -> m.getId() != movie.getId());
+        movie.getLiked().remove(this);
+        movie.setLikeCount(movie.getLikeCount() - 1);
+    }
+
+    public void likeReview(Review review) {
+        this.likedReviews.add(review);
+        review.getLiked().add(this);
+        review.setLikeCount(review.getLikeCount()+1);
+    }
+
+    public void unlikeReview(Review review) {
+        this.likedReviews.removeIf(r -> r.getId() != review.getId());
+        review.getLiked().remove(this);
+        review.setLikeCount(review.getLikeCount()-1);
+
     }
 
     @Override

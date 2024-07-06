@@ -2,6 +2,7 @@ package com.erkutoguz.moviever_backend.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -25,7 +26,19 @@ public class Watchlist {
             inverseJoinColumns = @JoinColumn(name = "movie_id")
     )
     private Set<Movie> movies;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
+    @PrePersist
+    public void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
     public Watchlist() {
     }
 
@@ -67,5 +80,21 @@ public class Watchlist {
 
     public void removeMovie(Long movieId){
         this.movies.removeIf(m -> m.getId() == movieId);
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
