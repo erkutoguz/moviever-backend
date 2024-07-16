@@ -6,6 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,12 +17,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+//TODO Logger var
+
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     public JwtAuthFilter(UserService userService, JwtService jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
@@ -39,8 +44,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             token = header.substring(7);
             username = jwtService.extractUsername(token);
         }
+        logger.info("Username {}, token {}", username, token);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails user = userService.loadUserByUsername(username);
+            logger.info("username is  {}", user.getUsername());
+            logger.info("validate token process is {}", jwtService.validateToken(token, user.getUsername()));
             if (jwtService.validateToken(token, user.getUsername())) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user,
                         null,
@@ -50,6 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
         }
+
 
         filterChain.doFilter(request, response);
     }

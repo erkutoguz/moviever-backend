@@ -6,6 +6,8 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,8 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.function.Function;
+
+//TODO looger var
 
 @Service
 public class JwtService {
@@ -27,6 +31,8 @@ public class JwtService {
     @Value("${spring.security.REFRESH_EXPIRATION}")
     private int REFRESH_EXPIRATION;
 
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     public String generateAccessToken(UserDetails user){
         HashMap<String, Object> claims = new HashMap<>();
         return buildToken(claims, ACCESS_EXPIRATION, user);
@@ -38,7 +44,12 @@ public class JwtService {
     }
 
     public boolean validateToken(String token, String username) {
-        return extractExpiration(token).before(new Date()) && extractUsername(token).equals(username);
+        logger.info("Validate token method, token is {}, username is {}", token, username);
+        logger.info("extract expiration result {}, extractusername result {}",
+                extractExpiration(token).before(new Date()), extractUsername(token).equals(username));
+        logger.info("expiration date {}", extractExpiration(token));
+        logger.info("nows date {}", new Date());
+        return new Date().before(extractExpiration(token)) && extractUsername(token).equals(username);
     }
 
     public String extractUsername(String token) {

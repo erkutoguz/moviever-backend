@@ -3,6 +3,8 @@ package com.erkutoguz.moviever_backend.service;
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
+import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
+import com.erkutoguz.moviever_backend.exception.InvalidOtpException;
 import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -40,7 +43,7 @@ public class AuthenticationService {
 
     public AuthResponse loginUser(AuthRequest request) {
         UserDetails user = userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found."));
+                .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String accessToken = jwtService.generateAccessToken(user);
@@ -57,6 +60,9 @@ public class AuthenticationService {
     }
 
     private User createUser(CreateUserRequest request) {
+        if(userRepository.findByUsername(request.username()).isPresent()) {
+            throw new DuplicateResourceException("Username exists");
+        }
         User newUser = new User();
         newUser.setUsername(request.username());
         newUser.setEmail(request.email());
@@ -73,10 +79,9 @@ public class AuthenticationService {
     }
 
     public String verifyRegistration(String otp) {
-        // TODO Exception ekle buraya
-        User user = userRepository.findByOtp(otp).orElseThrow(null);
+        User user = userRepository.findByOtp(otp).orElseThrow(() -> new InvalidOtpException("OTP is invalid"));
         user.setEnabled(true);
         userRepository.save(user);
-        return "Successfully Registered.";
+        return "Successfully Registered";
     }
 }

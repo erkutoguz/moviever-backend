@@ -10,10 +10,11 @@ import com.erkutoguz.moviever_backend.model.Watchlist;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
+import com.erkutoguz.moviever_backend.util.MovieMapper;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.Set;
+import java.util.List;
 
 @Service
 public class WatchlistService {
@@ -27,22 +28,20 @@ public class WatchlistService {
         this.userRepository = userRepository;
     }
 
-    public Set<Watchlist> retrieveUserWatchlists(Principal principal) {
-        User user = (User) userRepository.findByUsername(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found."));
+    public List<Watchlist> retrieveUserWatchlists(Principal principal) {
+        User user = (User) userRepository.findByUsername(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
         return user.getWatchlists();
     }
 
-
-
     public WatchlistResponse retrieveWatchlist(Long watchlistId) {
-        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found."));
-        WatchlistResponse response = new WatchlistResponse(watchlist.getId(), watchlist.getMovies(), watchlist.getWatchlistName());
-        return response;
+        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
+        return new WatchlistResponse(watchlist.getId(),
+                MovieMapper.map(watchlist.getMovies()), watchlist.getWatchlistName());
     }
 
     public void createWatchlist(CreateWatchlistRequest request, Principal principal) {
         Watchlist watchlist = new Watchlist();
-        User user = (User) userRepository.findByUsername(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found."));
+        User user = (User) userRepository.findByUsername(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
         watchlist.setUser(user);
         watchlist.setWatchlistName(request.watchlistName());
         watchlistRepository.save(watchlist);
@@ -53,14 +52,14 @@ public class WatchlistService {
     }
 
     public void addMovieToWatchlist(Long watchlistId, WatchlistMovieRequest request){
-        Movie movie = movieRepository.findById(request.movieId()).orElseThrow(() -> new ResourceNotFoundException("Movie not found."));
-        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found."));
+        Movie movie = movieRepository.findById(request.movieId()).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
         watchlist.addMovie(movie);
         watchlistRepository.save(watchlist);
     }
 
     public void deleteMovieFromWatchlist(Long watchlistId, Long movieId) {
-        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found."));
+        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
         watchlist.removeMovie(movieId);
         watchlistRepository.save(watchlist);
     }

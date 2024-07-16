@@ -1,5 +1,6 @@
 package com.erkutoguz.moviever_backend.repository;
 
+import com.erkutoguz.moviever_backend.model.Category;
 import com.erkutoguz.moviever_backend.model.Movie;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;

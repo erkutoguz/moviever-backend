@@ -7,11 +7,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = "username"))
 public class User implements UserDetails {
 
     @Id
@@ -19,6 +20,7 @@ public class User implements UserDetails {
     private Long id;
 
     private String email;
+
     private String username;
     private String password;
 
@@ -36,9 +38,9 @@ public class User implements UserDetails {
 
     private String about;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
+    @OneToMany(mappedBy = "user",
             cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private Set<Review> reviews;
+    private List<Review> reviews;
 
 //    @ManyToMany(fetch = FetchType.LAZY)
 //    @JoinTable(
@@ -57,7 +59,7 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "movie_id")
     )
-    private Set<Movie> likedMovies;
+    private List<Movie> likedMovies;
 
     @ManyToMany
     @JoinTable(
@@ -65,12 +67,10 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "review_id")
     )
-    private Set<Review> likedReviews;
-
-
+    private List<Review> likedReviews;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Watchlist> watchlists;
+    private List<Watchlist> watchlists;
 
     private boolean isEnabled;
     private boolean isAccountNonExpired;
@@ -158,27 +158,27 @@ public class User implements UserDetails {
         this.about = about;
     }
 
-    public Set<Movie> getLikedMovies() {
+    public List<Movie> getLikedMovies() {
         return likedMovies;
     }
 
-    public void setLikedMovies(Set<Movie> likedMovies) {
+    public void setLikedMovies(List<Movie> likedMovies) {
         this.likedMovies = likedMovies;
     }
 
-    public Set<Review> getLikedReviews() {
+    public List<Review> getLikedReviews() {
         return likedReviews;
     }
 
-    public void setLikedReviews(Set<Review> likedReviews) {
+    public void setLikedReviews(List<Review> likedReviews) {
         this.likedReviews = likedReviews;
     }
 
-    public Set<Review> getReviews() {
+    public List<Review> getReviews() {
         return reviews;
     }
 
-    public void setReviews(Set<Review> reviews) {
+    public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
     }
 
@@ -213,11 +213,11 @@ public class User implements UserDetails {
 //        this.follows = follows;
 //    }
 
-    public Set<Watchlist> getWatchlists() {
+    public List<Watchlist> getWatchlists() {
         return watchlists;
     }
 
-    public void setWatchlists(Set<Watchlist> watchlists) {
+    public void setWatchlists(List<Watchlist> watchlists) {
         this.watchlists = watchlists;
     }
 
@@ -252,6 +252,10 @@ public class User implements UserDetails {
         review.getLiked().remove(this);
         review.setLikeCount(review.getLikeCount()-1);
 
+    }
+
+    public void makeReview(Review review) {
+        this.reviews.add(review);
     }
 
     @Override

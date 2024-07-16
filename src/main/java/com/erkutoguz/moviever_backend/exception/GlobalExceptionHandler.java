@@ -13,4 +13,9 @@ public class GlobalExceptionHandler {
         ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND.value());
         return new ResponseEntity<>(exception, HttpStatus.NOT_FOUND);
     }
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ExceptionResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
+        ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
+        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
+    }
 }

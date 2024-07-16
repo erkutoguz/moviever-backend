@@ -1,8 +1,9 @@
 package com.erkutoguz.moviever_backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "categories")
@@ -16,8 +17,9 @@ public class Category {
     @Enumerated(EnumType.STRING)
     private CategoryType categoryName;
 
-    @ManyToMany(mappedBy = "categories")
-    private Set<Movie> movies;
+    @ManyToMany(mappedBy = "categories", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JsonIgnore
+    private List<Movie> movies;
 
     public Long getId() {
         return id;
@@ -35,11 +37,15 @@ public class Category {
         this.categoryName = categoryName;
     }
 
-    public Set<Movie> getMovies() {
+    public List<Movie> getMovies() {
         return movies;
     }
 
-    public void setMovies(Set<Movie> movies) {
+    public void setMovies(List<Movie> movies) {
         this.movies = movies;
+    }
+
+    public void addMovie(Movie movie) {
+        this.movies.add(movie);
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/watchlist")
@@ -22,8 +22,9 @@ public class WatchlistController {
         this.watchlistService = watchlistService;
     }
 
+    //TODO principal olayına bir bakmak gerekli
     @GetMapping
-    public Set<Watchlist> retrieveUserWatchlists(Principal principal) {
+    public List<Watchlist> retrieveUserWatchlists(Principal principal) {
         return watchlistService.retrieveUserWatchlists(principal);
     }
 

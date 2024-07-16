@@ -3,6 +3,7 @@ package com.erkutoguz.moviever_backend.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -23,7 +24,7 @@ public class Review {
     private int likeCount = 0;
 
     @ManyToMany(mappedBy = "likedReviews")
-    private Set<User> liked;
+    private List<User> liked;
 
     private String comment;
     private LocalDateTime createdAt;
@@ -79,11 +80,12 @@ public class Review {
         this.likeCount = likeCount;
     }
 
-    public Set<User> getLiked() {
+
+    public List<User> getLiked() {
         return liked;
     }
 
-    public void setLiked(Set<User> liked) {
+    public void setLiked(List<User> liked) {
         this.liked = liked;
     }
 

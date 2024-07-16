@@ -3,6 +3,7 @@ package com.erkutoguz.moviever_backend.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,7 +26,7 @@ public class Watchlist {
             joinColumns = @JoinColumn(name = "watchlist_id"),
             inverseJoinColumns = @JoinColumn(name = "movie_id")
     )
-    private Set<Movie> movies;
+    private List<Movie> movies;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -66,11 +67,11 @@ public class Watchlist {
         this.user = user;
     }
 
-    public Set<Movie> getMovies() {
+    public List<Movie> getMovies() {
         return movies;
     }
 
-    public void setMovies(Set<Movie> movies) {
+    public void setMovies(List<Movie> movies) {
         this.movies = movies;
     }
 

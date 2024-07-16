@@ -1,0 +1,14 @@
+--insert into categories (category_name) values ('ACTION');
+--insert into categories (category_name) values ('COMEDY');
+--insert into categories (category_name) values ('DRAMA');
+--insert into categories (category_name) values ('HORROR');
+--insert into categories (category_name) values ('ROMANCE');
+--insert into categories (category_name) values ('SCIENCE_FICTION');
+--insert into categories (category_name) values ('THRILLER');
+--insert into categories (category_name) values ('ANIMATION');
+--insert into categories (category_name) values ('FANTASY');
+--insert into categories (category_name) values ('DOCUMENTARY');
+--insert into categories (category_name) values ('ADVENTURE');
+--insert into categories (category_name) values ('CRIME');
+--insert into categories (category_name) values ('MUSIC');
+--insert into categories (category_name) values ('OTHER');

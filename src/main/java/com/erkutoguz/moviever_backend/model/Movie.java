@@ -3,6 +3,8 @@ package com.erkutoguz.moviever_backend.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -21,13 +23,13 @@ public class Movie {
     @Column(name = "release_year")
     private int releaseYear;
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Review> reviews;
+    private List<Review> reviews;
 
     @ManyToMany(mappedBy = "movies")
-    private Set<Watchlist> watchlists;
+    private List<Watchlist> watchlists;
 
     @ManyToMany(mappedBy = "likedMovies")
-    private Set<User> liked;
+    private List<User> liked;
 
     private int likeCount = 0;
     private LocalDateTime createdAt;
@@ -51,7 +53,7 @@ public class Movie {
             inverseJoinColumns = @JoinColumn(name = "category_id")
 
     )
-    private Set<Category> categories;
+    private Set<Category> categories = new HashSet<>();
 
     public Movie() {
     }
@@ -120,27 +122,27 @@ public class Movie {
         this.pictureUrl = pictureUrl;
     }
 
-    public Set<User> getLiked() {
+    public List<User> getLiked() {
         return liked;
     }
 
-    public void setLiked(Set<User> liked) {
+    public void setLiked(List<User> liked) {
         this.liked = liked;
     }
 
-    public Set<Review> getReviews() {
+    public List<Review> getReviews() {
         return reviews;
     }
 
-    public void setReviews(Set<Review> reviews) {
+    public void setReviews(List<Review> reviews) {
         this.reviews = reviews;
     }
 
-    public Set<Watchlist> getWatchlists() {
+    public List<Watchlist> getWatchlists() {
         return watchlists;
     }
 
-    public void setWatchlists(Set<Watchlist> watchlists) {
+    public void setWatchlists(List<Watchlist> watchlists) {
         this.watchlists = watchlists;
     }
 
@@ -158,5 +160,18 @@ public class Movie {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public void makeReview(Review review) {
+        this.reviews.add(review);
+    }
+
+    public void deleteReview(Review review) {
+        this.reviews.remove(review);
+    }
+
+    public void addCategory(Category category) {
+        this.categories.add(category);
+        category.addMovie(this);
     }
 }

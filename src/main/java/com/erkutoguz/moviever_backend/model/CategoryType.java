@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.model;
 
 public enum CategoryType {
+    ALL,
     ACTION,
     COMEDY,
     DRAMA,
