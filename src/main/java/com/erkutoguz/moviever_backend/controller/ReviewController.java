@@ -1,9 +1,14 @@
 package com.erkutoguz.moviever_backend.controller;
 
 import com.erkutoguz.moviever_backend.service.ReviewService;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -12,5 +17,18 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
+    @PostMapping("/{reviewId}/like")
+    public ResponseEntity<Void> likeMovie(@PathVariable Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        reviewService.likeReview(reviewId, authentication);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{reviewId}/like")
+    public ResponseEntity<Void> unlikeMovie(@PathVariable Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        reviewService.unlikeReview(reviewId, authentication);
+        return new ResponseEntity<Void>(HttpStatus.OK);
+    }
 
 }

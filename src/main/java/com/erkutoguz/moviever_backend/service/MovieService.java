@@ -73,6 +73,8 @@ public class MovieService {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));;
         user.likeMovie(movie);
+        userRepository.save(user);
+        movieRepository.save(movie);
     }
     public void unlikeMovie(Long movieId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
@@ -80,6 +82,8 @@ public class MovieService {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         user.unlikeMovie(movie);
+        userRepository.save(user);
+        movieRepository.save(movie);
     }
 
     private Movie builtMovie(CreateMovieRequest request) {

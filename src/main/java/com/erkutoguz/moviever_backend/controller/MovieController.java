@@ -80,7 +80,6 @@ public class MovieController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         movieService.likeMovie(movieId, authentication);
         return new ResponseEntity<Void>(HttpStatus.OK);
-
     }
     @DeleteMapping("/{movieId}/like")
     public ResponseEntity<Void> unlikeMovie(@PathVariable Long movieId) {

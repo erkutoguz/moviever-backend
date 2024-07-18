@@ -25,6 +25,7 @@ public class UserService implements UserDetailsService {
         user.setFirstname(request.firstname());
         user.setLastname(request.lastname());
         user.setAbout(request.about());
+        user.setPictureUrl(request.pictureUrl());
         userRepository.save(user);
         return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
     }

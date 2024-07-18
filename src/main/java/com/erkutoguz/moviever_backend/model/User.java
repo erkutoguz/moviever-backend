@@ -36,6 +36,9 @@ public class User implements UserDetails {
     @Column(name = "last_name")
     private String lastname;
 
+    @Column(name = "picture_url")
+    private String pictureUrl;
+
     private String about;
 
     @OneToMany(mappedBy = "user",
@@ -132,6 +135,14 @@ public class User implements UserDetails {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
     }
 
     public String getFirstname() {

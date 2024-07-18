@@ -9,7 +9,7 @@ public interface ReviewMapper {
     static ReviewResponse map(Review review) {
         if (review == null) return null;
         return new ReviewResponse(review.getComment(), review.getCreatedAt(),
-                review.getUpdatedAt(),review.getUser().getUsername(), review.getLikeCount());
+                review.getUpdatedAt(),review.getUser().getUsername(), review.getUser().getPictureUrl(), review.getLikeCount());
     }
 
     static List<ReviewResponse> map(List<Review> reviews) {

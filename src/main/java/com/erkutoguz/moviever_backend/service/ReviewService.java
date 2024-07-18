@@ -50,6 +50,8 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));;
         user.likeReview(review);
+        userRepository.save(user);
+        reviewRepository.save(review);
     }
 
     public void unlikeReview(Long reviewId, Authentication authentication) {
@@ -58,5 +60,7 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review not found"));;
         user.unlikeReview(review);
+        userRepository.save(user);
+        reviewRepository.save(review);
     }
 }
