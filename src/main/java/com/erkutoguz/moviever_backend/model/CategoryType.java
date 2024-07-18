@@ -6,6 +6,8 @@ public enum CategoryType {
     COMEDY,
     DRAMA,
     HORROR,
+    HISTORY,
+    MYSTERY,
     ROMANCE,
     SCIENCE_FICTION,
     THRILLER,

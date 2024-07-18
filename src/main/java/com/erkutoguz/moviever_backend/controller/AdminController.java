@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
@@ -22,6 +24,12 @@ public class AdminController {
     @PostMapping("/movies")
     public ResponseEntity<Void> createMovie(@RequestBody CreateMovieRequest request) {
         movieService.createMovie(request);
+        return new ResponseEntity<Void>(HttpStatus.CREATED);
+    }
+
+    @PostMapping("/movies-multiple")
+    public ResponseEntity<Void> createMultipleMovies(@RequestBody List<CreateMovieRequest> request) {
+        movieService.createMultipleMovies(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 

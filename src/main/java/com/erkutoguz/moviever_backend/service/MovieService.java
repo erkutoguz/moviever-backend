@@ -82,8 +82,7 @@ public class MovieService {
         user.unlikeMovie(movie);
     }
 
-    //ADMIN OPS
-    public void createMovie(CreateMovieRequest request) {
+    private Movie builtMovie(CreateMovieRequest request) {
         Movie movie = new Movie();
         request.categories().forEach(categoryType -> {
             movie.addCategory(categoryRepository.findByCategoryName(categoryType));
@@ -93,7 +92,17 @@ public class MovieService {
         movie.setPictureUrl(request.pictureUrl());
         movie.setRating(request.rating());
         movie.setReleaseYear(request.releaseYear());
-        movieRepository.save(movie);
+        return movie;
+    }
+
+    //ADMIN OPS
+    public void createMovie(CreateMovieRequest request) {
+        movieRepository.save(builtMovie(request));
+    }
+
+    public void createMultipleMovies(List<CreateMovieRequest> request) {
+        List<Movie> movies = request.stream().map(this::builtMovie).toList();
+        movieRepository.saveAll(movies);
     }
 
     public void deleteMovie(Long movieId){
