@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 //TODO logger var
@@ -41,13 +42,15 @@ public class MovieController {
     }
 
     @GetMapping("/most-liked-movies")
-    public List<MovieResponse> retrieveMostLikedMovies() {
-        return movieService.retrieveMostLikedMovies();
+    public Map<String, Object> retrieveMostLikedMovies(@RequestParam(defaultValue = "0") int page,
+                                                       @RequestParam(defaultValue = "12") int size) {
+        return movieService.retrieveMostLikedMovies(page, size);
     }
 
     @GetMapping("/new-movies")
-    public List<MovieResponse> retrieveNewMovies() {
-        return movieService.retrieveNewMovies();
+    public Map<String, Object> retrieveNewMovies(@RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "12") int size) {
+        return movieService.retrieveNewMovies(page, size);
     }
 
     @GetMapping("/recommended")
@@ -56,9 +59,10 @@ public class MovieController {
     }
 
     @GetMapping
-    public List<MovieResponse> retrieveAllMovies(@RequestParam(name = "category",
-            defaultValue = "ALL") CategoryType category) {
-        return movieService.retrieveAllMovies(category);
+    public Map<String, Object> retrieveAllMovies(@RequestParam(name = "category",defaultValue = "ALL") CategoryType category,
+                                                 @RequestParam(defaultValue = "0") int page,
+                                                 @RequestParam(defaultValue = "12") int size) {
+        return movieService.retrieveAllMovies(category,page,size);
     }
 
     @PostMapping("/{movieId}/reviews")

@@ -63,6 +63,4 @@ public class WatchlistService {
         watchlist.removeMovie(movieId);
         watchlistRepository.save(watchlist);
     }
-
-
 }

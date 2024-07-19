@@ -14,12 +14,17 @@ import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -45,26 +50,44 @@ public class MovieService {
         return DetailedMovieMapper.map(movie);
     }
 
-    public List<MovieResponse> retrieveMostLikedMovies() {
-        List<Movie> mostLikedMovies = movieRepository.findAll(Sort.by(Sort.Direction.DESC, "likeCount"));
-        return MovieMapper.map(mostLikedMovies);
+    public Map<String, Object> retrieveMostLikedMovies(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "likeCount"));
+        Page<Movie> mostLikedMovies = movieRepository.findAll(pageable);
+        Map<String, Object> map = new HashMap<>();
+        map.put("movies", MovieMapper.map(mostLikedMovies));
+        map.put("totalItems", mostLikedMovies.getTotalElements());
+        map.put("totalPages", mostLikedMovies.getTotalPages());
+        return map;
     }
     
-    public List<MovieResponse> retrieveNewMovies() {
-        List<Movie> newMovies = movieRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return MovieMapper.map(newMovies);
+    public Map<String, Object> retrieveNewMovies(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Movie> newMovies = movieRepository.findAll(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("movies", MovieMapper.map(newMovies));
+        map.put("totalItems", newMovies.getTotalElements());
+        map.put("totalPages", newMovies.getTotalPages());
+        return map;
     }
 
     public Set<MovieResponse> retrieveRecommendedMovies(Principal principal) {
         return null;
 //        return new MovieResponse();
     }
-    public List<MovieResponse> retrieveAllMovies(CategoryType categoryName) {
+    public Map<String, Object> retrieveAllMovies(CategoryType categoryName, int pageNumber, int pageSize) {
         Category category = categoryRepository.findByCategoryName(categoryName);
-        List<Movie> movies = category.equals("all") ?
-                movieRepository.findAll() :
-                categoryRepository.findByCategoryName(categoryName).getMovies();
-        return MovieMapper.map(movies);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+        Page<Movie> movies = (Page<Movie>) (category.equals("all") ?
+                        movieRepository.findAll() :
+                        movieRepository.findByCategoryName(categoryName, pageable));
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("movies", MovieMapper.map(movies));
+        map.put("totalItems", movies.getTotalElements());
+        map.put("totalPages", movies.getTotalPages());
+        return map;
     }
 
     public void likeMovie(Long movieId, Authentication authentication) {
