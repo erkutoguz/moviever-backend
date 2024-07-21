@@ -9,7 +9,7 @@ public interface DetailedMovieMapper {
         if (movie == null) return null;
         return new MovieResponseWithDetails(movie.getId(),movie.getTitle(),
                 movie.getDirector(), ReviewMapper.map(movie.getReviews()),
-                movie.getReleaseYear(), movie.getRating(), movie.getPictureUrl(),
+                movie.getReleaseYear(), movie.getRating(), movie.getPictureUrl(), movie.getTrailerUrl(),
                 movie.getLikeCount(), movie.getCategories());
     }
 

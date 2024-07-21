@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.ReviewRequest;
+import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.Review;
@@ -8,6 +9,9 @@ import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.ReviewRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
+import com.erkutoguz.moviever_backend.util.LikeMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +20,7 @@ import java.security.Principal;
 @Service
 public class ReviewService {
 
+    private  final Logger log = LoggerFactory.getLogger(ReviewService.class);
     private final ReviewRepository reviewRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
@@ -44,6 +49,12 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
+    public LikedReviewsResponse retrieveLikedReviewsByUser(Authentication authentication) {
+        User user = (User) userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return LikeMapper.map(user.getLikedReviews());
+    }
+
     public void likeReview(Long reviewId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -55,6 +66,8 @@ public class ReviewService {
     }
 
     public void unlikeReview(Long reviewId, Authentication authentication) {
+        log.info("auth is {}", authentication.getName());
+
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Review review = reviewRepository.findById(reviewId)

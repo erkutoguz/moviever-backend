@@ -50,6 +50,7 @@ public class MovieController {
     @GetMapping("/new-movies")
     public Map<String, Object> retrieveNewMovies(@RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "12") int size) {
+        logger.info("user is {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return movieService.retrieveNewMovies(page, size);
     }
 

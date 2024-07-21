@@ -5,6 +5,8 @@ import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
 import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
 import com.erkutoguz.moviever_backend.exception.InvalidOtpException;
+import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
+import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
@@ -83,5 +85,14 @@ public class AuthenticationService {
         user.setEnabled(true);
         userRepository.save(user);
         return "Successfully Registered";
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        String username = jwtService.extractUsername(refreshToken);
+        if (!jwtService.validateToken(refreshToken,username)) {
+            throw new InvalidTokenException("Invalid or expired token");
+        }
+        UserDetails user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken);
     }
 }

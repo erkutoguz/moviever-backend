@@ -20,8 +20,11 @@ public class Movie {
     private double rating;
     @Column(name = "picture_url")
     private String pictureUrl;
+    @Column(name = "trailer_url")
+    private String trailerUrl;
     @Column(name = "release_year")
     private int releaseYear;
+
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
 
@@ -116,6 +119,14 @@ public class Movie {
 
     public String getPictureUrl() {
         return pictureUrl;
+    }
+
+    public String getTrailerUrl() {
+        return trailerUrl;
+    }
+
+    public void setTrailerUrl(String trailerUrl) {
+        this.trailerUrl = trailerUrl;
     }
 
     public void setPictureUrl(String pictureUrl) {

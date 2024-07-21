@@ -43,12 +43,8 @@ public class JwtService {
         return buildToken(claims, REFRESH_EXPIRATION, user);
     }
 
+
     public boolean validateToken(String token, String username) {
-        logger.info("Validate token method, token is {}, username is {}", token, username);
-        logger.info("extract expiration result {}, extractusername result {}",
-                extractExpiration(token).before(new Date()), extractUsername(token).equals(username));
-        logger.info("expiration date {}", extractExpiration(token));
-        logger.info("nows date {}", new Date());
         return new Date().before(extractExpiration(token)) && extractUsername(token).equals(username);
     }
 

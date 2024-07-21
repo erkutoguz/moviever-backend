@@ -2,10 +2,15 @@ package com.erkutoguz.moviever_backend.controller;
 
 
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
+import com.erkutoguz.moviever_backend.dto.request.RefreshTokenRequest;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
+import com.erkutoguz.moviever_backend.security.SecurityConfig;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
+import com.erkutoguz.moviever_backend.service.JwtService;
 import jakarta.mail.MessagingException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -34,4 +39,10 @@ public class AuthenticationController {
         // TODO şu an için resend yok tek seferlik otp gönderiyor
         return authenticationService.verifyRegistration(otp);
     }
+
+    @PostMapping("/refresh-token")
+    public AuthResponse refreshToken(@RequestBody RefreshTokenRequest request) {
+        return authenticationService.refreshToken(request.refreshToken());
+    }
+
 }

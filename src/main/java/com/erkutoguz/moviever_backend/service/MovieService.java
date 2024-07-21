@@ -118,6 +118,7 @@ public class MovieService {
         movie.setTitle(request.title());
         movie.setPictureUrl(request.pictureUrl());
         movie.setRating(request.rating());
+        movie.setTrailerUrl(request.trailerUrl());
         movie.setReleaseYear(request.releaseYear());
         return movie;
     }
