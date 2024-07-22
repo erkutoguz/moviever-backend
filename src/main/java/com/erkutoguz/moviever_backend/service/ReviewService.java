@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.function.Predicate;
 
 @Service
 public class ReviewService {
@@ -49,10 +50,12 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    public LikedReviewsResponse retrieveLikedReviewsByUser(Authentication authentication) {
+    public LikedReviewsResponse retrieveLikedReviewsForMovieByUser(Authentication authentication, Long movieId) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return LikeMapper.map(user.getLikedReviews());
+        Predicate<Review> predicate = r -> r.getMovie().getId() == movieId;
+        log.info("movie likes {}", user.getLikedReviews().stream().filter(predicate).toList());
+        return LikeMapper.map(user.getLikedReviews().stream().filter(predicate).toList());
     }
 
     public void likeReview(Long reviewId, Authentication authentication) {

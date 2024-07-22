@@ -247,7 +247,7 @@ public class User implements UserDetails {
     }
 
     public void unlikeMovie(Movie movie) {
-        this.likedMovies.removeIf(m -> m.getId() != movie.getId());
+        this.likedMovies.removeIf(m -> m.getId() == movie.getId());
         movie.getLiked().remove(this);
         movie.setLikeCount(movie.getLikeCount() - 1);
     }
@@ -259,7 +259,7 @@ public class User implements UserDetails {
     }
 
     public void unlikeReview(Review review) {
-        this.likedReviews.removeIf(r -> r.getId() != review.getId());
+        this.likedReviews.removeIf(r -> r.getId() == review.getId());
         review.getLiked().remove(this);
         review.setLikeCount(review.getLikeCount()-1);
 

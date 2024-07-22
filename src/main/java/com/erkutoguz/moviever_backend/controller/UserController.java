@@ -28,11 +28,10 @@ public class UserController {
         return userService.updateUser(userId, request);
     }
     
-    @GetMapping("/liked-reviews")
-    public LikedReviewsResponse retrieveLikedReviews() {
+    @GetMapping("/liked-reviews/{movieId}")
+    public LikedReviewsResponse retrieveLikedReviewsForMovie(@PathVariable Long movieId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        log.info("{}",reviewService.retrieveLikedReviewsByUser(authentication));
-        return reviewService.retrieveLikedReviewsByUser(authentication);
+        return reviewService.retrieveLikedReviewsForMovieByUser(authentication,movieId);
     }
 
 }

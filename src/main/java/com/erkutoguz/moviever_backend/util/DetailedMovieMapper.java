@@ -5,12 +5,12 @@ import com.erkutoguz.moviever_backend.model.Movie;
 
 public interface DetailedMovieMapper {
 
-    static MovieResponseWithDetails map(Movie movie) {
+    static MovieResponseWithDetails map(Movie movie,boolean isUserLiked) {
         if (movie == null) return null;
         return new MovieResponseWithDetails(movie.getId(),movie.getTitle(),
                 movie.getDirector(), ReviewMapper.map(movie.getReviews()),
                 movie.getReleaseYear(), movie.getRating(), movie.getPictureUrl(), movie.getTrailerUrl(),
-                movie.getLikeCount(), movie.getCategories());
+                movie.getLikeCount(), isUserLiked, movie.getCategories());
     }
 
 }

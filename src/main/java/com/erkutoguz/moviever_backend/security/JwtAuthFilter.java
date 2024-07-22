@@ -1,7 +1,10 @@
 package com.erkutoguz.moviever_backend.security;
 
+import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
 import com.erkutoguz.moviever_backend.service.JwtService;
 import com.erkutoguz.moviever_backend.service.UserService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,27 +40,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        if (header != null && header.startsWith("Bearer ")) {
-            token = header.substring(7);
-            username = jwtService.extractUsername(token);
-        }
-        logger.info("Username {}, token {}", username, token);
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails user = userService.loadUserByUsername(username);
-            logger.info("username is  {}", user.getUsername());
-            logger.info("validate token process is {}", jwtService.validateToken(token, user.getUsername()));
-            if (jwtService.validateToken(token, user.getUsername())) {
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user,
-                        null,
-                        user.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+        try{
+            String header = request.getHeader("Authorization");
+            String token = null;
+            String username = null;
+            if (header != null && header.startsWith("Bearer ")) {
+                token = header.substring(7);
+                username = jwtService.extractUsername(token);
             }
+            logger.info("Username {}, token {}", username, token);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails user = userService.loadUserByUsername(username);
 
+                if (jwtService.validateToken(token, user.getUsername())) {
+
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user,
+                            null,
+                            user.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            }
+        } catch (ExpiredJwtException ex) {
+
+            request.setAttribute("exception", ex);
         }
+
 
 
         filterChain.doFilter(request, response);
