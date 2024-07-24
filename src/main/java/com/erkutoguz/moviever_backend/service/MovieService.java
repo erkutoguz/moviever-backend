@@ -4,6 +4,7 @@ import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponseWithDetails;
+import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.Category;
 import com.erkutoguz.moviever_backend.model.CategoryType;
@@ -14,6 +15,7 @@ import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
+import com.erkutoguz.moviever_backend.util.ReviewMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -49,6 +51,10 @@ public class MovieService {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
 
         return MovieMapper.map(movie);
+    }
+    public List<ReviewResponse> retrieveMovieReviews(Long movieId) {
+        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        return ReviewMapper.map(movie.getReviews());
     }
 
     public MovieResponseWithDetails retrieveMovieWithDetails(Long movieId) {

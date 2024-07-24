@@ -2,9 +2,12 @@ package com.erkutoguz.moviever_backend.controller;
 
 import com.erkutoguz.moviever_backend.dto.request.ReviewRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
+import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.MovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
+import com.erkutoguz.moviever_backend.util.ReviewMapper;
+import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -64,6 +67,12 @@ public class MovieController {
                                                  @RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "12") int size) {
         return movieService.retrieveAllMovies(category,page,size);
+    }
+
+    @GetMapping("/{movieId}/reviews")
+    public List<ReviewResponse> retrieveMovieReviews(@PathVariable Long movieId) {
+//        ReviewMapper.map(movie.getReviews())
+        return SortReviewResponseByLikeCount.sortByLike(movieService.retrieveMovieReviews(movieId));
     }
 
     @PostMapping("/{movieId}/reviews")

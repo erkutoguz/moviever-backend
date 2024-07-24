@@ -44,13 +44,13 @@ public class AuthenticationService {
     }
 
     public AuthResponse loginUser(AuthRequest request) {
-        UserDetails user = userRepository.findByUsername(request.username())
+        User user = (User) userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        return new AuthResponse(user.getUsername(), accessToken, refreshToken);
+        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  user.getPictureUrl());
     }
 
     public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, UnsupportedEncodingException {
@@ -58,7 +58,7 @@ public class AuthenticationService {
         emailVerificationService.sendVerificationMail(newUser.getEmail(), newUser.getFirstname(),newUser.getOtp());
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken);
+        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl());
     }
 
     private User createUser(CreateUserRequest request) {
@@ -92,7 +92,7 @@ public class AuthenticationService {
         if (!jwtService.validateToken(refreshToken,username)) {
             throw new InvalidTokenException("Invalid or expired token");
         }
-        UserDetails user = userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken);
+        User user = (User) userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken, user.getPictureUrl());
     }
 }
