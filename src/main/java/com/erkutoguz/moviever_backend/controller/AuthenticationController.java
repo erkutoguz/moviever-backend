@@ -9,6 +9,9 @@ import com.erkutoguz.moviever_backend.security.SecurityConfig;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import com.erkutoguz.moviever_backend.service.JwtService;
 import jakarta.mail.MessagingException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +38,12 @@ public class AuthenticationController {
     }
 
     @GetMapping("/verify")
-    public String verifyRegistration(@RequestParam String otp) {
-        // TODO şu an için resend yok tek seferlik otp gönderiyor
-        return authenticationService.verifyRegistration(otp);
+    public ResponseEntity<String> verifyRegistration(@RequestParam String otp) {
+       boolean isValid =  authenticationService.verifyRegistration(otp);
+        if(!isValid) {
+            return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "http://localhost:5173/verification-failed").build();
+        }
+        return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "http://localhost:5173/verification-success").build();
     }
 
     @PostMapping("/refresh-token")

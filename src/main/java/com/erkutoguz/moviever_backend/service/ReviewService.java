@@ -69,7 +69,6 @@ public class ReviewService {
     }
 
     public void unlikeReview(Long reviewId, Authentication authentication) {
-        log.info("auth is {}", authentication.getName());
 
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

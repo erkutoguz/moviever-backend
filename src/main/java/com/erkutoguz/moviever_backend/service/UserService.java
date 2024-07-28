@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
+import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
@@ -35,7 +36,6 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " not found"));
     }
-
 
     // Admin ops
     public void deleteUser(Long userId) {

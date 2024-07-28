@@ -50,7 +50,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  user.getPictureUrl());
+        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  user.getPictureUrl(), user.isEnabled());
     }
 
     public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, UnsupportedEncodingException {
@@ -58,7 +58,7 @@ public class AuthenticationService {
         emailVerificationService.sendVerificationMail(newUser.getEmail(), newUser.getFirstname(),newUser.getOtp());
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl());
+        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
     }
 
     private User createUser(CreateUserRequest request) {
@@ -80,11 +80,11 @@ public class AuthenticationService {
         return userRepository.save(newUser);
     }
 
-    public String verifyRegistration(String otp) {
+    public boolean verifyRegistration(String otp) {
         User user = userRepository.findByOtp(otp).orElseThrow(() -> new InvalidOtpException("OTP is invalid"));
         user.setEnabled(true);
         userRepository.save(user);
-        return "Successfully Registered";
+        return true;
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -93,6 +93,6 @@ public class AuthenticationService {
             throw new InvalidTokenException("Invalid or expired token");
         }
         User user = (User) userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken, user.getPictureUrl());
+        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken, user.getPictureUrl(), user.isEnabled());
     }
 }
