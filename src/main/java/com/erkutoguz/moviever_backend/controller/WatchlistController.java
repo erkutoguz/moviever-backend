@@ -3,7 +3,7 @@ package com.erkutoguz.moviever_backend.controller;
 import com.erkutoguz.moviever_backend.dto.request.CreateWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.WatchlistMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
-import com.erkutoguz.moviever_backend.model.Watchlist;
+import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +22,24 @@ public class WatchlistController {
         this.watchlistService = watchlistService;
     }
 
-    //TODO principal olayına bir bakmak gerekli
     @GetMapping
-    public List<Watchlist> retrieveUserWatchlists(Principal principal) {
+    public List<WatchlistResponse> retrieveUserWatchlists(Principal principal) {
         return watchlistService.retrieveUserWatchlists(principal);
     }
 
     @GetMapping("/{watchlistId}/movies")
-    public WatchlistResponse retrieveWatchlist(@PathVariable Long watchlistId){
+    public WatchlistResponseWithMovies retrieveWatchlist(@PathVariable Long watchlistId){
         return watchlistService.retrieveWatchlist(watchlistId);
     }
 
+    @GetMapping("/preview")
+    public List<WatchlistResponseWithMovies> retrieveWatchlistPreview() {
+        return watchlistService.retrieveWatchlistsPreview();
+    }
+
     @PostMapping
-    public ResponseEntity<Void> createWatchlist(CreateWatchlistRequest request, Principal principal) {
-        watchlistService.createWatchlist(request, principal);
+    public ResponseEntity<Void> createWatchlist(@RequestBody CreateWatchlistRequest request) {
+        watchlistService.createWatchlist(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
