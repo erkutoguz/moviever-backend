@@ -54,10 +54,10 @@ public class SecurityConfig {
 @Bean
 public CorsFilter corsFilter() {
     CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173"));
-    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "*"));
+    corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     corsConfiguration.setAllowedHeaders(List.of("*"));
-    corsConfiguration.setAllowCredentials(true);
+//    corsConfiguration.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", corsConfiguration);

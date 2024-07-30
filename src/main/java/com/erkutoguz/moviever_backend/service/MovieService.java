@@ -6,7 +6,6 @@ import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponseWithDetails;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
-import com.erkutoguz.moviever_backend.model.Category;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.User;
@@ -31,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 @Service
 public class MovieService {

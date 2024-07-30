@@ -1,8 +1,8 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
-import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
+import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
 import com.erkutoguz.moviever_backend.exception.InvalidOtpException;
 import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
@@ -13,14 +13,12 @@ import com.erkutoguz.moviever_backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -44,6 +42,7 @@ public class AuthenticationService {
     }
 
     public AuthResponse loginUser(AuthRequest request) {
+        
         User user = (User) userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
         authenticationManager.authenticate(

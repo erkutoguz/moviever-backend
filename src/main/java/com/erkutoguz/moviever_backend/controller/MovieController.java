@@ -6,7 +6,6 @@ import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.MovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
-import com.erkutoguz.moviever_backend.util.ReviewMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,8 +1,10 @@
 package com.erkutoguz.moviever_backend.controller;
 
 import com.erkutoguz.moviever_backend.dto.request.CreateWatchlistRequest;
+import com.erkutoguz.moviever_backend.dto.request.RenameWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.WatchlistMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
+import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
 import org.springframework.http.HttpStatus;
@@ -28,13 +30,22 @@ public class WatchlistController {
     }
 
     @GetMapping("/{watchlistId}/movies")
-    public WatchlistResponseWithMovies retrieveWatchlist(@PathVariable Long watchlistId){
-        return watchlistService.retrieveWatchlist(watchlistId);
+    public WatchlistResponseWithMovies retrieveWatchlist(@PathVariable Long watchlistId,
+                                                         @RequestParam(defaultValue = "0") int page,
+                                                         @RequestParam(defaultValue = "12") int size){
+        return watchlistService.retrieveWatchlist(watchlistId, page, size);
     }
 
     @GetMapping("/preview")
-    public List<WatchlistResponseWithMovies> retrieveWatchlistPreview() {
+    public List<WatchlistResponsePreview> retrieveWatchlistPreview() {
         return watchlistService.retrieveWatchlistsPreview();
+    }
+
+    @PatchMapping("/{watchlistId}")
+    public ResponseEntity<Void> renameWatchlist(@RequestBody RenameWatchlistRequest request,
+                                                @PathVariable Long watchlistId) {
+        watchlistService.renameWatchlist(watchlistId, request);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping
@@ -44,7 +55,8 @@ public class WatchlistController {
     }
 
     @PostMapping("/{watchlistId}")
-    public ResponseEntity<Void> addMovieToWatchlist(@PathVariable Long watchlistId, @RequestBody WatchlistMovieRequest request) {
+    public ResponseEntity<Void> addMovieToWatchlist(@PathVariable Long watchlistId,
+                                                    @RequestBody WatchlistMovieRequest request) {
         watchlistService.addMovieToWatchlist(watchlistId, request);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
@@ -56,7 +68,8 @@ public class WatchlistController {
     }
 
     @DeleteMapping("/{watchlistId}/movies/{movieId}")
-    public ResponseEntity<Void> deleteMovieFromWatchlist(@PathVariable Long watchlistId, @PathVariable Long movieId) {
+    public ResponseEntity<Void> deleteMovieFromWatchlist(@PathVariable Long watchlistId,
+                                                         @PathVariable Long movieId) {
         watchlistService.deleteMovieFromWatchlist(watchlistId, movieId);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }

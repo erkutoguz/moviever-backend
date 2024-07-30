@@ -44,8 +44,10 @@ public class ReviewService {
     }
 
     public void deleteReview(Long movieId, Long reviewId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        Review review = reviewRepository.findById(reviewId).orElseThrow(() -> new ResourceNotFoundException("Review not found"));
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review not found"));
         movie.deleteReview(review);
         reviewRepository.delete(review);
     }

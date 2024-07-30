@@ -173,6 +173,11 @@ public class Movie {
         this.updatedAt = updatedAt;
     }
 
+    public void removeFromWatchlist(Watchlist watchlist) {
+        watchlist.getMovies().remove(this);
+        this.watchlists.remove(watchlist);
+    }
+
     public void makeReview(Review review) {
         this.reviews.add(review);
     }
