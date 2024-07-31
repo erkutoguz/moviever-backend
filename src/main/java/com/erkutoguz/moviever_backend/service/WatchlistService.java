@@ -88,15 +88,15 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
+
     public void deleteWatchlist(Long watchlistId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
-        List<Movie> movies = watchlist.getMovies().stream().map(m -> {
-            m.removeFromWatchlist(watchlist);
-            return m;
-        }).toList();
 
+        List<Movie> movies = watchlist.getMovies().stream().toList();
+        movies.forEach(m -> m.removeFromWatchlist(watchlist));
         movieRepository.saveAll(movies);
+
         watchlistRepository.deleteById(watchlistId);
     }
 
