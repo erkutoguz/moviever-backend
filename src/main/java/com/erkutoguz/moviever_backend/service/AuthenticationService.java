@@ -11,53 +11,58 @@ import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 @Service
 public class AuthenticationService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailVerificationService emailVerificationService;
-
+    private final FirebaseStorageService firebaseStorageService;
     public AuthenticationService(UserRepository userRepository,
                                  JwtService jwtService,
                                  PasswordEncoder passwordEncoder,
-                                 AuthenticationManager authenticationManager, EmailVerificationService emailVerificationService) {
+                                 AuthenticationManager authenticationManager, EmailVerificationService emailVerificationService, FirebaseStorageService firebaseStorageService) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailVerificationService = emailVerificationService;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
-    public AuthResponse loginUser(AuthRequest request) {
-        
+    public AuthResponse loginUser(AuthRequest request) throws IOException {
         User user = (User) userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  user.getPictureUrl(), user.isEnabled());
+        String pictureUrl = firebaseStorageService.getImageUrl(user);
+        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  pictureUrl, user.isEnabled());
     }
 
-    public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, UnsupportedEncodingException {
+    public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, IOException {
         User newUser = createUser(request);
         emailVerificationService.sendVerificationMail(newUser.getEmail(), newUser.getFirstname(),newUser.getOtp());
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
+        String pictureUrl = firebaseStorageService.getImageUrl(newUser);
+        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, pictureUrl, newUser.isEnabled());
     }
 
     private User createUser(CreateUserRequest request) {

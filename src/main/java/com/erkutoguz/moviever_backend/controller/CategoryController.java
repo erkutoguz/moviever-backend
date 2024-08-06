@@ -3,14 +3,13 @@ package com.erkutoguz.moviever_backend.controller;
 import com.erkutoguz.moviever_backend.dto.response.CategoryResponse;
 import com.erkutoguz.moviever_backend.service.CategoryService;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.Set;
 
 @RestController
-@RequestMapping("/categories")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -20,7 +19,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    public List<CategoryResponse> retrieveAllCategories() {
+    public Set<CategoryResponse> retrieveAllCategories() {
         return categoryService.retrieveAllCategories();
     }
 }

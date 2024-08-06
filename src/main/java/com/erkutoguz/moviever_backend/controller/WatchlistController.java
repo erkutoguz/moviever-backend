@@ -7,15 +7,17 @@ import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/watchlist")
+@RequestMapping("/api/v1/watchlist")
 public class WatchlistController {
 
     private final WatchlistService watchlistService;
@@ -38,7 +40,7 @@ public class WatchlistController {
 
     @GetMapping("/preview")
     public List<WatchlistResponsePreview> retrieveWatchlistPreview() {
-        return watchlistService.retrieveWatchlistsPreview();
+        return watchlistService.retrieveWatchlistsPreview(SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @PatchMapping("/{watchlistId}")

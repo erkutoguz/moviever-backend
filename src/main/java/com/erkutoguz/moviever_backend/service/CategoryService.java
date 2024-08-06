@@ -1,11 +1,16 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.response.CategoryResponse;
+import com.erkutoguz.moviever_backend.model.Category;
 import com.erkutoguz.moviever_backend.repository.CategoryRepository;
 import com.erkutoguz.moviever_backend.util.CategoryMapper;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoryService {
@@ -16,7 +21,10 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
-    public List<CategoryResponse> retrieveAllCategories() {
-        return CategoryMapper.map(categoryRepository.findAll());
+
+    @Cacheable(value = "allCategories", key = "#root.methodName", unless = "#result==null")
+    public Set<CategoryResponse> retrieveAllCategories() {
+        List<Category> categories = categoryRepository.findAll();
+        return CategoryMapper.map(new HashSet<>(categories));
     }
 }

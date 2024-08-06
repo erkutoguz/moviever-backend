@@ -12,6 +12,7 @@ import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.LikeMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,7 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
+//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void makeReview(Long movieId, ReviewRequest request, Authentication authentication) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         User user = (User) userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -43,6 +45,7 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
+//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void deleteReview(Long movieId, Long reviewId) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -56,10 +59,10 @@ public class ReviewService {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Predicate<Review> predicate = r -> r.getMovie().getId() == movieId;
-        log.info("movie likes {}", user.getLikedReviews().stream().filter(predicate).toList());
         return LikeMapper.map(user.getLikedReviews().stream().filter(predicate).toList());
     }
 
+//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void likeReview(Long reviewId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -70,6 +73,7 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
+//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void unlikeReview(Long reviewId, Authentication authentication) {
 
         User user = (User) userRepository.findByUsername(authentication.getName())

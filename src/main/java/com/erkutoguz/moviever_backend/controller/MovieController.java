@@ -23,7 +23,7 @@ import java.util.Set;
 //TODO logger var
 
 @RestController
-@RequestMapping("/movies")
+@RequestMapping("/api/v1/movies")
 public class MovieController {
 
     private final MovieService movieService;
@@ -37,10 +37,12 @@ public class MovieController {
     @GetMapping("/{movieId}")
     public <T> T retrieveMovie(@RequestParam(name = "with-details", defaultValue = "false") Boolean withDetails,
                                        @PathVariable Long movieId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
         if (!withDetails) {
-            return (T) movieService.retrieveMovie(movieId);
+            return (T) movieService.retrieveMovie(movieId, username);
         }
-        return (T) movieService.retrieveMovieWithDetails(movieId);
+
+        return (T) movieService.retrieveMovieWithDetails(movieId, username);
     }
 
     @GetMapping("/most-liked-movies")
@@ -71,7 +73,7 @@ public class MovieController {
     @GetMapping("/{movieId}/reviews")
     public List<ReviewResponse> retrieveMovieReviews(@PathVariable Long movieId) {
 //        ReviewMapper.map(movie.getReviews())
-        return SortReviewResponseByLikeCount.sortByLike(movieService.retrieveMovieReviews(movieId));
+        return movieService.retrieveMovieReviews(movieId);
     }
 
     @PostMapping("/{movieId}/reviews")

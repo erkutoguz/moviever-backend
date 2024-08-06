@@ -42,7 +42,8 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
 //                .cors(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/v1/auth/**").permitAll())
+//                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
@@ -54,7 +55,7 @@ public class SecurityConfig {
 @Bean
 public CorsFilter corsFilter() {
     CorsConfiguration corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "*"));
+    corsConfiguration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:6379","*"));
     corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     corsConfiguration.setAllowedHeaders(List.of("*"));
 //    corsConfiguration.setAllowCredentials(true);

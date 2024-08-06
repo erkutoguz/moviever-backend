@@ -2,24 +2,20 @@ package com.erkutoguz.moviever_backend.controller;
 
 
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
+import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
 import com.erkutoguz.moviever_backend.dto.request.RefreshTokenRequest;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
-import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
-import com.erkutoguz.moviever_backend.security.SecurityConfig;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
-import com.erkutoguz.moviever_backend.service.JwtService;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -28,12 +24,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public AuthResponse registerUser(@RequestBody CreateUserRequest request) throws MessagingException, UnsupportedEncodingException {
+    public AuthResponse registerUser(@RequestBody CreateUserRequest request) throws MessagingException, IOException {
         return authenticationService.registerUser(request);
     }
 
     @PostMapping("/login")
-    public AuthResponse loginUser(@RequestBody AuthRequest request) {
+    public AuthResponse loginUser(@RequestBody AuthRequest request) throws IOException {
         return authenticationService.loginUser(request);
     }
 

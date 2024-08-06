@@ -8,6 +8,7 @@ import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.model.Movie;
+import com.erkutoguz.moviever_backend.model.Review;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.CategoryRepository;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
@@ -15,21 +16,22 @@ import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.ReviewMapper;
+import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MovieService {
@@ -38,31 +40,55 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
-    public MovieService(MovieRepository movieRepository, UserRepository userRepository, CategoryRepository categoryRepository) {
+    private final FirebaseStorageService firebaseStorageService;
+    public MovieService(MovieRepository movieRepository,
+                        UserRepository userRepository,
+                        CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
-
-    public MovieResponse retrieveMovie(Long movieId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-
+    public MovieResponse retrieveMovie(Long movieId, String username) {
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         return MovieMapper.map(movie);
     }
+
+//    @Cacheable(value = "movieReviews", key = "#root.methodName + '-' + #movieId", unless = "#result==null")
     public List<ReviewResponse> retrieveMovieReviews(Long movieId) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        return ReviewMapper.map(movie.getReviews());
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        return SortReviewResponseByLikeCount.sortByLike(reviewMapper(movie.getReviews()));
     }
 
-    public MovieResponseWithDetails retrieveMovieWithDetails(Long movieId) {
+    private List<ReviewResponse> reviewMapper(List<Review> reviews)  {
+        return reviews.stream().map(r-> {
+            String pictureUrl = "";
+            try{
+                 pictureUrl = firebaseStorageService.getImageUrl(r.getUser());
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return new ReviewResponse(r.getId(), r.getComment(),r.getCreatedAt(),r.getUpdatedAt()
+                    ,r.getUser().getUsername(),pictureUrl , r.getLikeCount());
+        }).toList();
+    }
+
+
+//    @Cacheable(value = "movieDetails", key = "#root.methodName + '-' + #movieId")
+    public MovieResponseWithDetails retrieveMovieWithDetails(Long movieId, String username) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        User user =(User) userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName())
+        UserDetails user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         boolean isUserLiked = movie.getLiked().contains(user);
         return DetailedMovieMapper.map(movie, isUserLiked);
     }
 
+    @Cacheable(value = "mostLikedMovies", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize",unless = "#result==null")
     public Map<String, Object> retrieveMostLikedMovies(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "likeCount"));
         Page<Movie> mostLikedMovies = movieRepository.findAll(pageable);
@@ -72,7 +98,8 @@ public class MovieService {
         map.put("totalPages", mostLikedMovies.getTotalPages());
         return map;
     }
-    
+
+    @Cacheable(value = "newMovies", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize",unless = "#result==null")
     public Map<String, Object> retrieveNewMovies(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Movie> newMovies = movieRepository.findAll(pageable);
@@ -88,6 +115,9 @@ public class MovieService {
         return null;
 //        return new MovieResponse();
     }
+
+    @Cacheable(cacheNames = "allMovies", key = "#root.methodName + '-' + #categoryName + '-' + #pageNumber + '-' + #pageSize",
+            unless = "#result==null")
     public Map<String, Object> retrieveAllMovies(CategoryType categoryName, int pageNumber, int pageSize) {
         final Page<Movie> movies;
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -96,12 +126,6 @@ public class MovieService {
         }else {
             movies = movieRepository.findByCategoryName(categoryName, pageable);
         }
-//        Category category = categoryRepository.findByCategoryName(categoryName);
-//        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-//
-//        Page<Movie> movies = (Page<Movie>) (category.equals("ALL") ?
-//                        movieRepository.findAll() :
-//                        movieRepository.findByCategoryName(categoryName, pageable));
 
         Map<String, Object> map = new HashMap<>();
         map.put("movies", MovieMapper.map(movies));

@@ -16,6 +16,9 @@ import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistPreviewMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +48,8 @@ public class WatchlistService {
         return WatchlistMapper.map(watchlists);
     }
 
+    //TODO buraya bi bak
+    // @CachePut(cacheNames = {"watchlistPreview", "userWatchlist"}, key = " + #watchlistId", unless = "#result == null")
     public void renameWatchlist(Long watchlistId, RenameWatchlistRequest request) {
         //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
@@ -53,20 +58,24 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-    public List<WatchlistResponsePreview> retrieveWatchlistsPreview() {
-        User user = (User) userRepository.findByUsername(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        List<Watchlist> watchlists = watchlistRepository.findByUserId(user.getId()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
-        List<WatchlistResponsePreview> response = new ArrayList<>();
+//    @Cacheable(cacheNames = "watchlistPreview", key = "#root.methodName + '-' + #username", unless = "#result==null")
+    public List<WatchlistResponsePreview> retrieveWatchlistsPreview(String username) {
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        List<Watchlist> watchlists = watchlistRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
 
+        List<WatchlistResponsePreview> response = new ArrayList<>();
         for (int i = 0; i < watchlists.size(); i++) {
             response.add(WatchlistPreviewMapper.map(watchlists.get(i)));
         }
         return response;
     }
 
-
+//    @Cacheable(cacheNames = "userWatchlist", key = "#root.methodName + '-' + #watchlistId + '-' + #page + '-' + #size" , unless = "#result==null")
     public WatchlistResponseWithMovies retrieveWatchlist(Long watchlistId, int page, int size) {
-        Watchlist watchlist = watchlistRepository.findById(watchlistId).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
+        Watchlist watchlist = watchlistRepository.findById(watchlistId)
+                .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
 
         Pageable pageable = PageRequest.of(page, size);
 
@@ -77,7 +86,7 @@ public class WatchlistService {
     }
 
 
-
+//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void createWatchlist(CreateWatchlistRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Watchlist watchlist = new Watchlist();
@@ -88,7 +97,7 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-
+//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void deleteWatchlist(Long watchlistId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -100,6 +109,7 @@ public class WatchlistService {
         watchlistRepository.deleteById(watchlistId);
     }
 
+//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void addMovieToWatchlist(Long watchlistId, WatchlistMovieRequest request){
         Movie movie = movieRepository.findById(request.movieId())
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -111,6 +121,7 @@ public class WatchlistService {
         }
     }
 
+//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void deleteMovieFromWatchlist(Long watchlistId, Long movieId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));

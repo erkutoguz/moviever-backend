@@ -1,7 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
-import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
+import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
@@ -12,23 +12,39 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
+    private final FirebaseStorageService firebaseStorageService;
+    public UserService(UserRepository userRepository, FirebaseStorageService firebaseStorageService) {
         this.userRepository = userRepository;
+        this.firebaseStorageService = firebaseStorageService;
     }
 
-    public ResponseEntity<String> updateUser(Long userId, UpdateUserRequest request) {
+    public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
         // TODO exceptions to everywhere
-        User user = userRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        user.setFirstname(request.firstname());
-        user.setLastname(request.lastname());
-        user.setAbout(request.about());
-        user.setPictureUrl(request.pictureUrl());
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(!request.firstname().isEmpty()) {
+            user.setFirstname(request.firstname());
+        }
+        if(!request.lastname().isEmpty()) {
+            user.setLastname(request.lastname());
+        }
+        if(!request.about().isEmpty()) {
+            user.setAbout(request.about());
+        }
         userRepository.save(user);
         return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
+    }
+
+    public UserDetailsResponse retrieveProfile(String username) throws IOException {
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String pictureUrl = firebaseStorageService.getImageUrl(user);
+        return new UserDetailsResponse(user.getFirstname(), user.getLastname(),pictureUrl, user.getAbout());
     }
 
     @Override
@@ -43,4 +59,5 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         userRepository.delete(user);
     }
+
 }

@@ -10,7 +10,7 @@ public interface DetailedMovieMapper {
         return new MovieResponseWithDetails(movie.getId(),movie.getTitle(),
                 movie.getDirector(),
                 movie.getReleaseYear(), movie.getRating(), movie.getPictureUrl(), movie.getTrailerUrl(),
-                movie.getLikeCount(), isUserLiked, movie.getCategories());
+                movie.getLikeCount(), isUserLiked, CategoryMapper.map(movie.getCategories()));
     }
 
 }

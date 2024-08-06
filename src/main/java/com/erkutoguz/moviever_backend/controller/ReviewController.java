@@ -8,7 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/reviews")
+@RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
     private final ReviewService reviewService;

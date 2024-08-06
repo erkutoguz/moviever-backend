@@ -1,12 +1,12 @@
 package com.erkutoguz.moviever_backend.util;
 
-import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.Review;
 
 import java.util.List;
 
 public interface ReviewMapper {
+
     static ReviewResponse map(Review review) {
         if (review == null) return null;
         return new ReviewResponse(review.getId(), review.getComment(), review.getCreatedAt(),
