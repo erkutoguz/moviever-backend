@@ -39,16 +39,17 @@
 		</dependency>
 <!--		cloud storage-->
 
-<!--		serializer-->
+
+
+		<!--elasticsearh-->
 		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.17.1</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
 		</dependency>
-<!--		serializer-->
 
+		<!--elasticsearh-->
 
-<!--		cache-->
+		<!--		cache-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
