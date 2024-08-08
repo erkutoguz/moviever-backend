@@ -1,9 +1,11 @@
 package com.erkutoguz.moviever_backend.controller;
 
-import com.erkutoguz.moviever_backend.dto.request.CreateMovieDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieDocumentResponse;
 import com.erkutoguz.moviever_backend.service.ESMovieDocumentService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,11 +18,6 @@ public class MovieDocumentController {
 
     public MovieDocumentController(ESMovieDocumentService movieDocumentService) {
         this.movieDocumentService = movieDocumentService;
-    }
-
-    @PostMapping("/insert-movie")
-    public MovieDocumentResponse insertMovieDocument(@RequestBody CreateMovieDocumentRequest request) {
-        return movieDocumentService.insertMovieDocument(request);
     }
 
     @GetMapping("/search/{partialMovieName}")

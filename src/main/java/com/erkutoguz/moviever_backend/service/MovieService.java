@@ -6,48 +6,53 @@ import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponseWithDetails;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
+import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.Review;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.CategoryRepository;
+import com.erkutoguz.moviever_backend.repository.MovieDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
+import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
-import com.erkutoguz.moviever_backend.util.ReviewMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class MovieService {
-
-    private static final Logger log = LoggerFactory.getLogger(MovieService.class);
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final FirebaseStorageService firebaseStorageService;
+    private final ESProducer esProducer;
+    private final MovieDocumentRepository movieDocumentRepository;
     public MovieService(MovieRepository movieRepository,
                         UserRepository userRepository,
-                        CategoryRepository categoryRepository, FirebaseStorageService firebaseStorageService) {
+                        CategoryRepository categoryRepository,
+                        FirebaseStorageService firebaseStorageService, ESProducer esProducer, MovieDocumentRepository movieDocumentRepository) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.firebaseStorageService = firebaseStorageService;
+        this.esProducer = esProducer;
+        this.movieDocumentRepository = movieDocumentRepository;
     }
 
     public MovieResponse retrieveMovie(Long movieId, String username) {
@@ -56,7 +61,6 @@ public class MovieService {
         return MovieMapper.map(movie);
     }
 
-//    @Cacheable(value = "movieReviews", key = "#root.methodName + '-' + #movieId", unless = "#result==null")
     public List<ReviewResponse> retrieveMovieReviews(Long movieId) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -78,7 +82,6 @@ public class MovieService {
     }
 
 
-//    @Cacheable(value = "movieDetails", key = "#root.methodName + '-' + #movieId")
     public MovieResponseWithDetails retrieveMovieWithDetails(Long movieId, String username) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         UserDetails user = userRepository.findByUsername(username)
@@ -153,6 +156,19 @@ public class MovieService {
         movieRepository.save(movie);
     }
 
+
+    //ADMIN OPS
+    public void createMovie(CreateMovieRequest request) {
+        Movie movie = movieRepository.save(builtMovie(request));
+        esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));
+    }
+
+    public void createMultipleMovies(List<CreateMovieRequest> request) {
+        List<Movie> movies = request.stream().map(this::builtMovie).toList();
+        List<Movie> savedMovies = movieRepository.saveAll(movies);
+        esProducer.sendMovieDocumentList(MovieDocumentMapper.map(savedMovies));
+    }
+
     private Movie builtMovie(CreateMovieRequest request) {
         Movie movie = new Movie();
         request.categories().forEach(categoryType -> {
@@ -167,16 +183,6 @@ public class MovieService {
         return movie;
     }
 
-    //ADMIN OPS
-    public void createMovie(CreateMovieRequest request) {
-        movieRepository.save(builtMovie(request));
-    }
-
-    public void createMultipleMovies(List<CreateMovieRequest> request) {
-        List<Movie> movies = request.stream().map(this::builtMovie).toList();
-        movieRepository.saveAll(movies);
-    }
-
     public void deleteMovie(Long movieId){
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -189,5 +195,12 @@ public class MovieService {
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         request.updateMovie(movie);
         movieRepository.save(movie);
+    }
+
+    public String syncWithEs() {
+        List<Movie> movies = movieRepository.findAll();
+        movieDocumentRepository.deleteAll();
+        esProducer.sendMovieDocumentList(MovieDocumentMapper.map(movies));
+        return "successfully synchronized";
     }
 }

@@ -33,6 +33,11 @@ public class MovieController {
         this.reviewService = reviewService;
     }
 
+    @GetMapping("/sync-with-es")
+    public String syncWithEs() {
+        return movieService.syncWithEs();
+    }
+
     @GetMapping("/{movieId}")
     public <T> T retrieveMovie(@RequestParam(name = "with-details", defaultValue = "false") Boolean withDetails,
                                        @PathVariable Long movieId) {

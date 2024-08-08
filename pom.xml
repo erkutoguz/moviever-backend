@@ -39,6 +39,14 @@
 		</dependency>
 <!--		cloud storage-->
 
+<!--		kafka-->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<!--		kafka-->
+
 
 
 		<!--elasticsearh-->
