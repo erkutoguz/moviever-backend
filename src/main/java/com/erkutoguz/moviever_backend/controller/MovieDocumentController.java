@@ -25,4 +25,5 @@ public class MovieDocumentController {
         return movieDocumentService.searchMoviesAutoSuggest(partialMovieName);
     }
 
+
 }

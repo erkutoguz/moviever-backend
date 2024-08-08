@@ -5,8 +5,10 @@ import jakarta.persistence.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Document(indexName = "movies")
+@Setting(settingPath = "static/es-settings.json")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieDocument {
 
@@ -16,7 +18,7 @@ public class MovieDocument {
     @Field(type = FieldType.Long)
     private long movieId;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer")
     private String title;
 
     @Field(type = FieldType.Text)
