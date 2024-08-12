@@ -1,7 +1,6 @@
 package com.erkutoguz.moviever_backend.util;
 
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
-import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.model.Watchlist;
 
 import java.util.List;

@@ -8,15 +8,18 @@ import java.util.function.Supplier;
 
 public class ESUtil {
 
-    public static Supplier<Query> createAutoSuggestCriteriaQuery(String partialMovieName) {
-
+    public static Supplier<Query> createAutoSuggestCriteriaQueryForMovie(String partialMovieName) {
+        if (partialMovieName == null || partialMovieName.isEmpty()) {
+            throw new IllegalArgumentException("Invalid movie name");
+        }
         Criteria criteria = new Criteria("title");
         for(String s : partialMovieName.split("[\\s.,]+")){
             criteria.contains(s);
         }
-//        Criteria criteria = new Criteria("title").fuzzy(partialMovieName);
         return () -> new CriteriaQuery(criteria);
     }
+
+
 
 
 

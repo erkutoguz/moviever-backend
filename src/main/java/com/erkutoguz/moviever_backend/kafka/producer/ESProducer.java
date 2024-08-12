@@ -1,9 +1,7 @@
 package com.erkutoguz.moviever_backend.kafka.producer;
 
-
-import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
-import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
+import com.erkutoguz.moviever_backend.model.UserDocument;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +23,19 @@ public class ESProducer {
         kafkaTemplate.send("add-movie-document-list", request);
     }
 
-    public void sendDeleteMessage(Long movieId) {
+    public void sendUserDocument(UserDocument request) {
+        kafkaTemplate.send("add-user-document", request);
+    }
+
+    public void sendUserDocumentList(List<UserDocument> request) {
+        kafkaTemplate.send("add-user-document-list", request);
+    }
+
+    public void sendDeleteMovieMessage(Long movieId) {
         kafkaTemplate.send("delete-movie-document", movieId);
+    }
+    public void sendDeleteUserMessage(Long userId) {
+        kafkaTemplate.send("delete-user-document", userId);
     }
 
 }

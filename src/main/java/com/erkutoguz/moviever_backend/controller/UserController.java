@@ -6,8 +6,6 @@ import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.service.FirebaseStorageService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -21,7 +19,6 @@ import java.io.IOException;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
     private final FirebaseStorageService firebaseStorageService;
     private final ReviewService reviewService;
@@ -32,10 +29,14 @@ public class UserController {
         this.reviewService = reviewService;
     }
 
+    @GetMapping("/sync-with-es")
+    public String syncWithEs() {
+        return userService.syncWithEs();
+    }
+
     @PutMapping("/me")
     public ResponseEntity<String> updateUser(@RequestBody UpdateUserRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         return userService.updateUser(authentication.getName(), request);
     }
 

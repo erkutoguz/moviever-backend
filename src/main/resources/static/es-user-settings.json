@@ -1,0 +1,40 @@
+{
+  "analysis": {
+    "tokenizer": {
+      "edge_ngram_tokenizer": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 20,
+        "token_chars": ["letter", "digit"]
+      }
+    },
+    "analyzer": {
+      "edge_ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "edge_ngram_tokenizer",
+        "filter": ["lowercase"]
+      }
+    }
+  }
+,
+  "mappings": {
+    "properties": {
+      "username": {
+        "type": "text",
+        "analyzer": "edge_ngram_analyzer"
+      },
+      "email": {
+        "type": "text",
+        "analyzer": "edge_ngram_analyzer"
+      },
+      "firstName": {
+        "type": "text",
+        "analyzer": "edge_ngram_analyzer"
+      },
+      "lastName": {
+        "type": "text",
+        "analyzer": "edge_ngram_analyzer"
+      }
+    }
+  }
+}

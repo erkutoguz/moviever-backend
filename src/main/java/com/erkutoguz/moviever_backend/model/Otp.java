@@ -4,7 +4,6 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 
 import java.time.LocalDateTime;
-import java.util.Random;
 import java.util.UUID;
 
 public class Otp {

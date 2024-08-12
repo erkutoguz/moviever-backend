@@ -42,7 +42,7 @@ public class User implements UserDetails {
     private String about;
 
     @OneToMany(mappedBy = "user",
-            cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+            cascade = CascadeType.ALL)
     private List<Review> reviews;
 
 //    @ManyToMany(fetch = FetchType.LAZY)

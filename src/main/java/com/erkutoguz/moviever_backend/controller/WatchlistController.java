@@ -7,7 +7,6 @@ import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;

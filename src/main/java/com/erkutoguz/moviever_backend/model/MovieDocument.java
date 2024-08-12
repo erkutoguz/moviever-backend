@@ -8,7 +8,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.data.elasticsearch.annotations.Setting;
 
 @Document(indexName = "movies")
-@Setting(settingPath = "static/es-settings.json")
+@Setting(settingPath = "static/es-movie-settings.json")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MovieDocument {
 

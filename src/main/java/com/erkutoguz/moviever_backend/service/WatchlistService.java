@@ -16,9 +16,6 @@ import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistPreviewMapper;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +25,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class WatchlistService {
@@ -49,7 +48,6 @@ public class WatchlistService {
     }
 
     //TODO buraya bi bak
-    // @CachePut(cacheNames = {"watchlistPreview", "userWatchlist"}, key = " + #watchlistId", unless = "#result == null")
     public void renameWatchlist(Long watchlistId, RenameWatchlistRequest request) {
         //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
@@ -58,7 +56,6 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-//    @Cacheable(cacheNames = "watchlistPreview", key = "#root.methodName + '-' + #username", unless = "#result==null")
     public List<WatchlistResponsePreview> retrieveWatchlistsPreview(String username) {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -72,7 +69,6 @@ public class WatchlistService {
         return response;
     }
 
-//    @Cacheable(cacheNames = "userWatchlist", key = "#root.methodName + '-' + #watchlistId + '-' + #page + '-' + #size" , unless = "#result==null")
     public WatchlistResponseWithMovies retrieveWatchlist(Long watchlistId, int page, int size) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -86,7 +82,6 @@ public class WatchlistService {
     }
 
 
-//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void createWatchlist(CreateWatchlistRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Watchlist watchlist = new Watchlist();
@@ -97,7 +92,6 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void deleteWatchlist(Long watchlistId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -109,7 +103,6 @@ public class WatchlistService {
         watchlistRepository.deleteById(watchlistId);
     }
 
-//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void addMovieToWatchlist(Long watchlistId, WatchlistMovieRequest request){
         Movie movie = movieRepository.findById(request.movieId())
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -121,7 +114,6 @@ public class WatchlistService {
         }
     }
 
-//    @CacheEvict(value = {"userWatchlist","watchlistPreview"}, allEntries = true)
     public void deleteMovieFromWatchlist(Long watchlistId, Long movieId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -130,5 +122,16 @@ public class WatchlistService {
         movie.removeFromWatchlist(watchlist);
         watchlistRepository.save(watchlist);
         movieRepository.save(movie);
+    }
+
+    public Map<String, Object> retrieveAllWatchlists(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        final Page<Watchlist> watchlists = watchlistRepository.findAllByOrderByIdAsc(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("reviews", WatchlistMapper.map(watchlists.getContent()));
+        map.put("totalItems", watchlists.getTotalElements());
+        map.put("totalPages", watchlists.getTotalPages());
+        return map;
     }
 }

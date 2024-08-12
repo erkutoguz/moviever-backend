@@ -42,7 +42,7 @@ public class EmailVerificationService {
 
         content = content.replace("[[name]]", firstname);
 
-        String verifyURL = getCurrentDomain() + "/auth/verify?otp=" + otp;
+        String verifyURL = getCurrentDomain() + "/api/v1/auth/verify?otp=" + otp;
         content = content.replace("[[URL]]", verifyURL);
 
         helper.setText(content, true);

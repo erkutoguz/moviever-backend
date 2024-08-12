@@ -125,7 +125,7 @@ public class MovieService {
         final Page<Movie> movies;
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         if(categoryName.equals(CategoryType.ALL)) {
-            movies = movieRepository.findAll(pageable);
+            movies = movieRepository.findAllByOrderByIdDesc(pageable);
         }else {
             movies = movieRepository.findByCategoryName(categoryName, pageable);
         }

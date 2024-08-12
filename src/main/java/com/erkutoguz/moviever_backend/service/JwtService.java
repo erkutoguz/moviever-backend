@@ -1,13 +1,10 @@
 package com.erkutoguz.moviever_backend.service;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,7 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.function.Function;
 
-//TODO looger var
 
 @Service
 public class JwtService {
@@ -31,7 +27,6 @@ public class JwtService {
     @Value("${spring.security.REFRESH_EXPIRATION}")
     private int REFRESH_EXPIRATION;
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
 
     public String generateAccessToken(UserDetails user){
         HashMap<String, Object> claims = new HashMap<>();

@@ -10,8 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
 
-//    List<Movie> findAll(Sort sort);
-        Page<Movie> findAll(Pageable pageable);
+        Page<Movie> findAllByOrderByIdDesc(Pageable pageable);
 
         @Query("SELECT m from Movie m JOIN m.watchlists w WHERE w.id = :watchlistId")
         Page<Movie> findByWatchlistId(@Param("watchlistId") Long watchlistId, Pageable pageable);

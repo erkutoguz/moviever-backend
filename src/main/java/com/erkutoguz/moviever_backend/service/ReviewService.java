@@ -10,19 +10,20 @@ import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.ReviewRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.LikeMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.annotation.CacheEvict;
+import com.erkutoguz.moviever_backend.util.ReviewMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 
 @Service
 public class ReviewService {
 
-    private  final Logger log = LoggerFactory.getLogger(ReviewService.class);
     private final ReviewRepository reviewRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
@@ -32,7 +33,18 @@ public class ReviewService {
         this.userRepository = userRepository;
     }
 
-//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
+    public Map<String, Object> retrieveAllReviews(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        final Page<Review> reviews = reviewRepository.findAllByOrderByIdAsc(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("reviews", ReviewMapper.map(reviews.getContent()));
+        map.put("totalItems", reviews.getTotalElements());
+        map.put("totalPages", reviews.getTotalPages());
+        return map;
+    }
+
     public void makeReview(Long movieId, ReviewRequest request, Authentication authentication) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         User user = (User) userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -45,7 +57,6 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void deleteReview(Long movieId, Long reviewId) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -62,7 +73,6 @@ public class ReviewService {
         return LikeMapper.map(user.getLikedReviews().stream().filter(predicate).toList());
     }
 
-//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void likeReview(Long reviewId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -73,9 +83,7 @@ public class ReviewService {
         reviewRepository.save(review);
     }
 
-//    @CacheEvict(value = {"movieReviews"}, allEntries = true)
     public void unlikeReview(Long reviewId, Authentication authentication) {
-
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Review review = reviewRepository.findById(reviewId)

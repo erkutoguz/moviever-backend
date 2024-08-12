@@ -56,7 +56,7 @@ public class FirebaseStorageService {
         if (blob == null || !blob.exists()) {
             throw new ResourceNotFoundException("File not found: " + fileName);
         }
-        URL signedUrl = blob.signUrl(15, TimeUnit.MINUTES);
+        URL signedUrl = blob.signUrl(1, TimeUnit.DAYS);
 
         return signedUrl.toString();
     }

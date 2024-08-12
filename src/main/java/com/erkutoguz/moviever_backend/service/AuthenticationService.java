@@ -11,8 +11,6 @@ import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import jakarta.mail.MessagingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,7 +24,6 @@ import java.util.Set;
 @Service
 public class AuthenticationService {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;

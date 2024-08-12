@@ -39,6 +39,14 @@
 		</dependency>
 <!--		cloud storage-->
 
+<!--		actuator-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<!--		actuator-->
+
+
 <!--		kafka-->
 		<dependency>
 			<groupId>org.springframework.kafka</groupId>

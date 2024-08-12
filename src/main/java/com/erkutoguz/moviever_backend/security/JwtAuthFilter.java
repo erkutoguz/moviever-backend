@@ -1,10 +1,8 @@
 package com.erkutoguz.moviever_backend.security;
 
-import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
 import com.erkutoguz.moviever_backend.service.JwtService;
 import com.erkutoguz.moviever_backend.service.UserService;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

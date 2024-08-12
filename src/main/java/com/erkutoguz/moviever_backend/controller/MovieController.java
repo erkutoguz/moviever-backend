@@ -6,8 +6,6 @@ import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.MovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -19,15 +17,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-//TODO logger var
-
 @RestController
 @RequestMapping("/api/v1/movies")
 public class MovieController {
 
     private final MovieService movieService;
     private final ReviewService reviewService;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     public MovieController(MovieService movieService, ReviewService reviewService) {
         this.movieService = movieService;
         this.reviewService = reviewService;
@@ -58,7 +53,6 @@ public class MovieController {
     @GetMapping("/new-movies")
     public Map<String, Object> retrieveNewMovies(@RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "12") int size) {
-        logger.info("user is {}", SecurityContextHolder.getContext().getAuthentication().getName());
         return movieService.retrieveNewMovies(page, size);
     }
 

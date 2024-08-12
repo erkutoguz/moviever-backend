@@ -77,4 +77,17 @@ public class KafkaConfiguration {
         return TopicBuilder.name("delete-movie-document").build();
     }
 
+    @Bean
+    public NewTopic addUserTopic() {
+        return TopicBuilder.name("add-user-document").build();
+    }
+    @Bean
+    public NewTopic addUserListTopic() {
+        return TopicBuilder.name("add-user-document-list").build();
+    }
+    @Bean
+    public NewTopic deleteUserTopic() {
+        return TopicBuilder.name("delete-user-document").build();
+    }
+
 }

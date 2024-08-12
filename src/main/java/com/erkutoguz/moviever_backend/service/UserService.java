@@ -3,8 +3,15 @@ package com.erkutoguz.moviever_backend.service;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
+import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.User;
+import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
+import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
+import com.erkutoguz.moviever_backend.util.UserMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,14 +20,40 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
+    private final UserDocumentRepository userDocumentRepository;
     private final FirebaseStorageService firebaseStorageService;
-    public UserService(UserRepository userRepository, FirebaseStorageService firebaseStorageService) {
+    private final ESProducer esProducer;
+    public UserService(UserRepository userRepository, UserDocumentRepository userDocumentRepository, FirebaseStorageService firebaseStorageService, ESProducer esProducer) {
         this.userRepository = userRepository;
+        this.userDocumentRepository = userDocumentRepository;
         this.firebaseStorageService = firebaseStorageService;
+        this.esProducer = esProducer;
+    }
+
+    public String syncWithEs() {
+        List<User> users = userRepository.findAll();
+        userDocumentRepository.deleteAll();
+        esProducer.sendUserDocumentList(UserDocumentMapper.map(users));
+        return "successfully synchronized";
+
+    }
+
+    public Map<String, Object> retrieveAllUsers(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        final Page<User> users = userRepository.findAllByOrderByIdAsc(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("users", UserMapper.map(users));
+        map.put("totalItems", users.getTotalElements());
+        map.put("totalPages", users.getTotalPages());
+        return map;
     }
 
     public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
