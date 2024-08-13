@@ -16,6 +16,8 @@ import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistPreviewMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +50,7 @@ public class WatchlistService {
     }
 
     //TODO buraya bi bak
+    @CacheEvict(value = "retrieveAllWatchlists")
     public void renameWatchlist(Long watchlistId, RenameWatchlistRequest request) {
         //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
@@ -82,6 +85,7 @@ public class WatchlistService {
     }
 
 
+    @CacheEvict(value = "retrieveAllWatchlists")
     public void createWatchlist(CreateWatchlistRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Watchlist watchlist = new Watchlist();
@@ -92,6 +96,7 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
+    @CacheEvict(value = "retrieveAllWatchlists")
     public void deleteWatchlist(Long watchlistId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -124,6 +129,7 @@ public class WatchlistService {
         movieRepository.save(movie);
     }
 
+    @Cacheable(value = "retrieveAllWatchlists", key = "#root.methodName + '-' + #page + '-' + #size")
     public Map<String, Object> retrieveAllWatchlists(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         final Page<Watchlist> watchlists = watchlistRepository.findAllByOrderByIdAsc(pageable);

@@ -5,20 +5,17 @@ import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponseWithDetails;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
+import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
-import com.erkutoguz.moviever_backend.model.CategoryType;
-import com.erkutoguz.moviever_backend.model.Movie;
-import com.erkutoguz.moviever_backend.model.Review;
-import com.erkutoguz.moviever_backend.model.User;
-import com.erkutoguz.moviever_backend.repository.CategoryRepository;
-import com.erkutoguz.moviever_backend.repository.MovieDocumentRepository;
-import com.erkutoguz.moviever_backend.repository.MovieRepository;
-import com.erkutoguz.moviever_backend.repository.UserRepository;
+import com.erkutoguz.moviever_backend.model.*;
+import com.erkutoguz.moviever_backend.repository.*;
 import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
 import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,26 +27,25 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class MovieService {
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final WatchlistRepository watchlistRepository;
     private final FirebaseStorageService firebaseStorageService;
     private final ESProducer esProducer;
     private final MovieDocumentRepository movieDocumentRepository;
     public MovieService(MovieRepository movieRepository,
                         UserRepository userRepository,
-                        CategoryRepository categoryRepository,
+                        CategoryRepository categoryRepository, WatchlistRepository watchlistRepository,
                         FirebaseStorageService firebaseStorageService, ESProducer esProducer, MovieDocumentRepository movieDocumentRepository) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
+        this.watchlistRepository = watchlistRepository;
         this.firebaseStorageService = firebaseStorageService;
         this.esProducer = esProducer;
         this.movieDocumentRepository = movieDocumentRepository;
@@ -123,11 +119,11 @@ public class MovieService {
             unless = "#result==null")
     public Map<String, Object> retrieveAllMovies(CategoryType categoryName, int pageNumber, int pageSize) {
         final Page<Movie> movies;
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "id"));
         if(categoryName.equals(CategoryType.ALL)) {
             movies = movieRepository.findAllByOrderByIdDesc(pageable);
         }else {
-            movies = movieRepository.findByCategoryName(categoryName, pageable);
+            movies = movieRepository.findByCategoryNameByOrderByIdDesc(categoryName, pageable);
         }
 
         Map<String, Object> map = new HashMap<>();
@@ -137,6 +133,7 @@ public class MovieService {
         return map;
     }
 
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void likeMovie(Long movieId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -146,6 +143,8 @@ public class MovieService {
         userRepository.save(user);
         movieRepository.save(movie);
     }
+
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void unlikeMovie(Long movieId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -158,12 +157,21 @@ public class MovieService {
 
 
     //ADMIN OPS
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void createMovie(CreateMovieRequest request) {
+        Optional<Movie> movieExists = movieRepository.findByTitle(request.title());
+        if(movieExists.isPresent()) {
+            throw new DuplicateResourceException("Movie already exist");
+        }
         Movie movie = movieRepository.save(builtMovie(request));
         esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));
     }
 
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void createMultipleMovies(List<CreateMovieRequest> request) {
+        request.forEach(r -> {
+            if(movieRepository.findByTitle(r.title()).isPresent()) throw new DuplicateResourceException("Movie already exist");
+        });
         List<Movie> movies = request.stream().map(this::builtMovie).toList();
         List<Movie> savedMovies = movieRepository.saveAll(movies);
         esProducer.sendMovieDocumentList(MovieDocumentMapper.map(savedMovies));
@@ -183,13 +191,23 @@ public class MovieService {
         return movie;
     }
 
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void deleteMovie(Long movieId){
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-
+        for(Watchlist watchlist : movie.getWatchlists()) {
+            watchlist.removeMovie(movieId);
+            watchlistRepository.save(watchlist);
+        }
+        for(User user : movie.getLiked()) {
+            user.unlikeMovie(movie);
+            userRepository.save(user);
+        }
+        esProducer.sendDeleteMovieMessage(movieId);
         movieRepository.delete(movie);
     }
 
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));

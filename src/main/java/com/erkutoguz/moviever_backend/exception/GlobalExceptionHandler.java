@@ -1,5 +1,6 @@
 package com.erkutoguz.moviever_backend.exception;
 
+import org.hibernate.NonUniqueResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -16,6 +17,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<ExceptionResponse> handleDuplicateResourceException(DuplicateResourceException ex) {
+        ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
+        return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
+    }
+    @ExceptionHandler(NonUniqueResultException.class)
+    public ResponseEntity<ExceptionResponse> handleNonUniqueResourceException(NonUniqueResultException ex) {
         ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.CONFLICT.value());
         return new ResponseEntity<>(exception, HttpStatus.CONFLICT);
     }

@@ -6,6 +6,8 @@ import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.google.auth.Credentials;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.storage.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +28,7 @@ public class FirebaseStorageService {
         this.userRepository = userRepository;
     }
 
+    @CacheEvict(value = "profilePictures", key = "#username")
     public void uploadImage(MultipartFile multipartFile, String username) throws IOException {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -42,6 +45,7 @@ public class FirebaseStorageService {
         updateUserProfilePicture(user, url);
     }
 
+    @Cacheable(value = "profilePictures", key = "#root.methodName + '-' + #user.username",unless = "#result==null")
     public String getImageUrl(User user) throws IOException {
         if(user.getPictureUrl() == null || user.getPictureUrl().isEmpty() || user.getPictureUrl().trim().isEmpty()) {
              return "";
@@ -61,12 +65,12 @@ public class FirebaseStorageService {
         return signedUrl.toString();
     }
 
+    @CacheEvict(value = "profilePictures", key = "#user.username")
     public void removeProfilePicture(String username) throws IOException {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         deleteExistingProfilePicture(user);
     }
-
 
     private void updateUserProfilePicture(User user, String url) {
         user.setPictureUrl(url);

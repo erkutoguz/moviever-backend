@@ -15,7 +15,9 @@ public class Movie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column(unique = true)
     private String title;
+
     private String director;
     private double rating;
     @Column(name = "picture_url")

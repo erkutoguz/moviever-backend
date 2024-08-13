@@ -31,10 +31,10 @@ public class ESProducer {
         kafkaTemplate.send("add-user-document-list", request);
     }
 
-    public void sendDeleteMovieMessage(Long movieId) {
+    public void sendDeleteMovieMessage(long movieId) {
         kafkaTemplate.send("delete-movie-document", movieId);
     }
-    public void sendDeleteUserMessage(Long userId) {
+    public void sendDeleteUserMessage(long userId) {
         kafkaTemplate.send("delete-user-document", userId);
     }
 

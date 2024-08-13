@@ -10,6 +10,8 @@ public interface MovieDocumentMapper {
 
     static MovieDocument map(Movie request) {
         MovieDocument movieDocument = new MovieDocument();
+        movieDocument.setCategories(CategoryMapper.map(request.getCategories()));
+        movieDocument.setReleaseYear(request.getReleaseYear());
         movieDocument.setTitle(request.getTitle());
         movieDocument.setMovieId(request.getId());
         movieDocument.setPosterUrl(request.getPictureUrl());

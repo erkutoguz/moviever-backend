@@ -1,11 +1,13 @@
 package com.erkutoguz.moviever_backend.util;
 
 import com.erkutoguz.moviever_backend.dto.response.AdminUserResponse;
+import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface UserDocumentMapper {
     static UserDocument map(User request) {
@@ -30,7 +32,8 @@ public interface UserDocumentMapper {
 
     static AdminUserResponse map(UserDocument request) {
         return new AdminUserResponse(request.getId(), request.getUsername(), request.getEmail(),
-                request.getFirstName(), request.getLastName(), request.isEnabled(), request.getRoles());
+                request.getFirstName(), request.getLastName(), request.isEnabled(),
+                request.getRoles().stream().map(Role::getAuthority).collect(Collectors.toSet()));
     }
 
     static List<AdminUserResponse> mapUserDocument(List<UserDocument> request) {

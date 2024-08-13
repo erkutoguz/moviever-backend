@@ -9,6 +9,8 @@ import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import com.erkutoguz.moviever_backend.util.UserMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +47,7 @@ public class UserService implements UserDetailsService {
 
     }
 
+    @Cacheable(value = "retrieveAllUsers", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize")
     public Map<String, Object> retrieveAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
         final Page<User> users = userRepository.findAllByOrderByIdAsc(pageable);
@@ -56,6 +59,7 @@ public class UserService implements UserDetailsService {
         return map;
     }
 
+    @CacheEvict(value = "retrieveAllUsers")
     public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
         // TODO exceptions to everywhere
         User user = (User) userRepository.findByUsername(username)
@@ -87,9 +91,11 @@ public class UserService implements UserDetailsService {
     }
 
     // Admin ops
+    @CacheEvict(value = "retrieveAllUsers")
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        esProducer.sendDeleteUserMessage(userId);
         userRepository.delete(user);
     }
 

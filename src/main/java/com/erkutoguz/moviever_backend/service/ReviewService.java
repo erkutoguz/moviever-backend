@@ -34,7 +34,6 @@ public class ReviewService {
     }
 
     public Map<String, Object> retrieveAllReviews(int page, int size) {
-
         Pageable pageable = PageRequest.of(page, size);
         final Page<Review> reviews = reviewRepository.findAllByOrderByIdAsc(pageable);
 
@@ -56,6 +55,7 @@ public class ReviewService {
         user.makeReview(review);
         reviewRepository.save(review);
     }
+
 
     public void deleteReview(Long movieId, Long reviewId) {
         Movie movie = movieRepository.findById(movieId)

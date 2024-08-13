@@ -26,6 +26,7 @@ public class Watchlist {
             inverseJoinColumns = @JoinColumn(name = "movie_id")
     )
     private List<Movie> movies;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

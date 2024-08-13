@@ -14,7 +14,10 @@ public class AdminService {
     private final UserService userService;
     private final ReviewService reviewService;
     private final WatchlistService watchlistService;
-    public AdminService(MovieService movieService, UserService userService, ReviewService reviewService, WatchlistService watchlistService) {
+    public AdminService(MovieService movieService,
+                        UserService userService,
+                        ReviewService reviewService,
+                        WatchlistService watchlistService) {
         this.movieService = movieService;
         this.userService = userService;
         this.reviewService = reviewService;

@@ -22,6 +22,13 @@
       "title": {
         "type": "text",
         "analyzer": "edge_ngram_analyzer"
+      },"categories": {
+        "type": "nested",
+        "properties": {
+          "categoryType": {
+            "type": "keyword"
+          }
+        }
       }
     }
   }

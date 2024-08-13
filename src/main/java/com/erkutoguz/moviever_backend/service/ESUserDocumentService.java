@@ -1,7 +1,12 @@
 package com.erkutoguz.moviever_backend.service;
 
+import com.erkutoguz.moviever_backend.controller.UserDocumentController;
+import com.erkutoguz.moviever_backend.dto.response.AdminUserResponse;
+import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
+import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
+import com.erkutoguz.moviever_backend.util.SortUserDocumentById;
 import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,16 +35,22 @@ public class ESUserDocumentService {
         userDocumentRepository.saveAll(userDocumentList);
     }
 
+    public void deleteUserDocument(Long userId) {
+        UserDocument user = userDocumentRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Document not found"));
+        userDocumentRepository.delete(user);
+    }
+
     //TODO cache at buralara da
     public Map<String, Object> searchUsersAutoSuggest(String partialInput, int page, int size) throws IOException {
         Pageable pageable = PageRequest.of(page, size);
         Map<String, Object> map = new HashMap<>();
         Page<UserDocument> userDocuments = userDocumentRepository
                 .searchByUsernameOrEmailOrFirstNameOrLastName(partialInput, pageable);
-
+        List<AdminUserResponse> users = UserDocumentMapper.mapUserDocument(userDocuments.getContent());
         map.put("totalItems", userDocuments.getTotalElements());
         map.put("totalPages", userDocuments.getTotalPages());
-        map.put("users", UserDocumentMapper.mapUserDocument(userDocuments.getContent()));
+        map.put("users", SortUserDocumentById.sort(users));
         return map;
     }
 

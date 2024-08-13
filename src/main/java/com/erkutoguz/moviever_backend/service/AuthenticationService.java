@@ -7,9 +7,11 @@ import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
 import com.erkutoguz.moviever_backend.exception.InvalidOtpException;
 import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
+import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
+import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import jakarta.mail.MessagingException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -30,16 +32,21 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final EmailVerificationService emailVerificationService;
     private final FirebaseStorageService firebaseStorageService;
+    private final ESProducer esProducer;
     public AuthenticationService(UserRepository userRepository,
                                  JwtService jwtService,
                                  PasswordEncoder passwordEncoder,
-                                 AuthenticationManager authenticationManager, EmailVerificationService emailVerificationService, FirebaseStorageService firebaseStorageService) {
+                                 AuthenticationManager authenticationManager,
+                                 EmailVerificationService emailVerificationService,
+                                 FirebaseStorageService firebaseStorageService,
+                                 ESProducer esProducer) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailVerificationService = emailVerificationService;
         this.firebaseStorageService = firebaseStorageService;
+        this.esProducer = esProducer;
     }
 
     public AuthResponse loginUser(AuthRequest request) throws IOException {
@@ -55,7 +62,11 @@ public class AuthenticationService {
 
     public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, IOException {
         User newUser = createUser(request);
+
+        esProducer.sendUserDocument(UserDocumentMapper.map(newUser));
+
         emailVerificationService.sendVerificationMail(newUser.getEmail(), newUser.getFirstname(),newUser.getOtp());
+
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
         String pictureUrl = firebaseStorageService.getImageUrl(newUser);
