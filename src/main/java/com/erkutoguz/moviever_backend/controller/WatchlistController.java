@@ -37,6 +37,7 @@ public class WatchlistController {
         return watchlistService.retrieveWatchlist(watchlistId, page, size);
     }
 
+
     @GetMapping("/preview")
     public List<WatchlistResponsePreview> retrieveWatchlistPreview() {
         return watchlistService.retrieveWatchlistsPreview(SecurityContextHolder.getContext().getAuthentication().getName());

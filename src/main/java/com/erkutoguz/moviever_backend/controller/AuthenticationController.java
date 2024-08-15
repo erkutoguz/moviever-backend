@@ -6,7 +6,6 @@ import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
 import com.erkutoguz.moviever_backend.dto.request.RefreshTokenRequest;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
-import com.erkutoguz.moviever_backend.service.ESUserDocumentService;
 import jakarta.mail.MessagingException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

@@ -31,21 +31,18 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final EmailVerificationService emailVerificationService;
-    private final FirebaseStorageService firebaseStorageService;
     private final ESProducer esProducer;
     public AuthenticationService(UserRepository userRepository,
                                  JwtService jwtService,
                                  PasswordEncoder passwordEncoder,
                                  AuthenticationManager authenticationManager,
                                  EmailVerificationService emailVerificationService,
-                                 FirebaseStorageService firebaseStorageService,
                                  ESProducer esProducer) {
         this.userRepository = userRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.emailVerificationService = emailVerificationService;
-        this.firebaseStorageService = firebaseStorageService;
         this.esProducer = esProducer;
     }
 
@@ -56,8 +53,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        String pictureUrl = firebaseStorageService.getImageUrl(user);
-        return new AuthResponse(user.getUsername(), accessToken, refreshToken,  pictureUrl, user.isEnabled());
+        return new AuthResponse(user.getUsername(), accessToken, refreshToken, user.getPictureUrl(), user.isEnabled());
     }
 
     public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, IOException {
@@ -69,8 +65,7 @@ public class AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        String pictureUrl = firebaseStorageService.getImageUrl(newUser);
-        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, pictureUrl, newUser.isEnabled());
+        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
     }
 
     private User createUser(CreateUserRequest request) {

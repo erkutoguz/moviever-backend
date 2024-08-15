@@ -6,6 +6,7 @@ import com.erkutoguz.moviever_backend.dto.request.WatchlistMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
+import com.erkutoguz.moviever_backend.exception.AccessDeniedException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.User;
@@ -50,11 +51,16 @@ public class WatchlistService {
     }
 
     //TODO buraya bi bak
-    @CacheEvict(value = "retrieveAllWatchlists")
+    @CacheEvict(value = "retrieveAllWatchlists", allEntries = true)
     public void renameWatchlist(Long watchlistId, RenameWatchlistRequest request) {
         //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if(!currentUser.equals(watchlist.getUser().getUsername())) {
+            throw new AccessDeniedException("You don't have permission to see this watchlist");
+        }
         watchlist.setWatchlistName(request.watchlistName());
         watchlistRepository.save(watchlist);
     }
@@ -62,6 +68,7 @@ public class WatchlistService {
     public List<WatchlistResponsePreview> retrieveWatchlistsPreview(String username) {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         List<Watchlist> watchlists = watchlistRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
 
@@ -75,6 +82,11 @@ public class WatchlistService {
     public WatchlistResponseWithMovies retrieveWatchlist(Long watchlistId, int page, int size) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        if(!currentUser.equals(watchlist.getUser().getUsername())) {
+            throw new AccessDeniedException("You don't have permission to see this watchlist");
+        }
 
         Pageable pageable = PageRequest.of(page, size);
 
@@ -85,7 +97,7 @@ public class WatchlistService {
     }
 
 
-    @CacheEvict(value = "retrieveAllWatchlists")
+    @CacheEvict(value = "retrieveAllWatchlists", allEntries = true)
     public void createWatchlist(CreateWatchlistRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Watchlist watchlist = new Watchlist();
@@ -96,7 +108,7 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-    @CacheEvict(value = "retrieveAllWatchlists")
+    @CacheEvict(value = "retrieveAllWatchlists", allEntries = true)
     public void deleteWatchlist(Long watchlistId) {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
@@ -133,9 +145,8 @@ public class WatchlistService {
     public Map<String, Object> retrieveAllWatchlists(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         final Page<Watchlist> watchlists = watchlistRepository.findAllByOrderByIdAsc(pageable);
-
         Map<String, Object> map = new HashMap<>();
-        map.put("reviews", WatchlistMapper.map(watchlists.getContent()));
+        map.put("watchlists", WatchlistMapper.mapToAdminWatchlistResponse(watchlists.getContent()));
         map.put("totalItems", watchlists.getTotalElements());
         map.put("totalPages", watchlists.getTotalPages());
         return map;

@@ -1,14 +1,22 @@
 package com.erkutoguz.moviever_backend.controller;
 
+import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
+import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.AdminService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -42,8 +50,23 @@ public class AdminController {
         return adminService.retrieveAllWatchlists(page, size);
     }
 
+    @GetMapping("/category/distribution")
+    public List<CategoryMovieCountResponse> retrieveMovieCountForEachCategory() {
+        return adminService.retrieveMovieCountForEachCategory();
+    }
+
     @PostMapping("/movies")
-    public ResponseEntity<Void> createMovie(@RequestBody CreateMovieRequest request) {
+    public ResponseEntity<Void> createMovie(@RequestParam("title") String title,
+                                             @RequestParam("director") String director,
+                                             @RequestParam("releaseYear") int releaseYear,
+                                             @RequestParam("trailerUrl") String trailerUrl,
+                                             @RequestParam("rating") double rating,
+                                             @RequestParam("categories") String categoriesJson,
+                                             @RequestPart("poster") MultipartFile poster)
+            throws IOException, DbxException {
+        Set<CategoryType> categories = new ObjectMapper()
+                .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
+        CreateMovieRequest request = new CreateMovieRequest(title,director,releaseYear,poster,trailerUrl,rating,categories);
         adminService.createMovie(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
@@ -71,4 +94,6 @@ public class AdminController {
         adminService.deleteUser(userId);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
+
+
 }

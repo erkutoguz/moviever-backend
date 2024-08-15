@@ -1,8 +1,10 @@
 package com.erkutoguz.moviever_backend.controller;
 
+import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
+import com.erkutoguz.moviever_backend.service.DropboxService;
 import com.erkutoguz.moviever_backend.service.FirebaseStorageService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
@@ -20,12 +22,9 @@ import java.io.IOException;
 public class UserController {
 
     private final UserService userService;
-    private final FirebaseStorageService firebaseStorageService;
     private final ReviewService reviewService;
-
-    public UserController(UserService userService, FirebaseStorageService firebaseStorageService, ReviewService reviewService) {
+    public UserController(UserService userService, ReviewService reviewService) {
         this.userService = userService;
-        this.firebaseStorageService = firebaseStorageService;
         this.reviewService = reviewService;
     }
 
@@ -41,17 +40,17 @@ public class UserController {
     }
 
     @PostMapping("/profile/avatar")
-    public ResponseEntity<Void> uploadProfilePicture(@RequestParam("image") MultipartFile multipartFile) throws IOException {
+    public ResponseEntity<Void> uploadProfilePicture(@RequestParam("image") MultipartFile multipartFile)
+            throws IOException, DbxException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        firebaseStorageService.uploadImage(multipartFile,authentication.getName());
+        userService.uploadProfilePicture(authentication.getName(),multipartFile);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
-
     }
 
     @DeleteMapping("/profile/avatar")
-    public ResponseEntity<Void> removeProfilePicture() throws IOException {
+    public ResponseEntity<Void> removeProfilePicture() throws IOException, DbxException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        firebaseStorageService.removeProfilePicture(authentication.getName());
+        userService.deleteProfilePicture(authentication.getName());
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 

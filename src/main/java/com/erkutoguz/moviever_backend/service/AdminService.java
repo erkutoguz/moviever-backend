@@ -1,10 +1,13 @@
 package com.erkutoguz.moviever_backend.service;
 
+import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -14,14 +17,16 @@ public class AdminService {
     private final UserService userService;
     private final ReviewService reviewService;
     private final WatchlistService watchlistService;
+    private final CategoryService categoryService;
     public AdminService(MovieService movieService,
                         UserService userService,
                         ReviewService reviewService,
-                        WatchlistService watchlistService) {
+                        WatchlistService watchlistService, CategoryService categoryService) {
         this.movieService = movieService;
         this.userService = userService;
         this.reviewService = reviewService;
         this.watchlistService = watchlistService;
+        this.categoryService = categoryService;
     }
 
     public Map<String, Object> retrieveAllUsers(int page, int size) {
@@ -40,7 +45,7 @@ public class AdminService {
         return watchlistService.retrieveAllWatchlists(page, size);
     }
 
-    public void createMovie(CreateMovieRequest request) {
+    public void createMovie(CreateMovieRequest request) throws IOException, DbxException {
         movieService.createMovie(request);
     }
 
@@ -61,4 +66,7 @@ public class AdminService {
     }
 
 
+    public List<CategoryMovieCountResponse> retrieveMovieCountForEachCategory() {
+        return categoryService.retrieveMovieCountForEachCategory();
+    }
 }

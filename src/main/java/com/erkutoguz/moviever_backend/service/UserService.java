@@ -1,5 +1,6 @@
 package com.erkutoguz.moviever_backend.service;
 
+import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,13 +32,15 @@ import java.util.Map;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserDocumentRepository userDocumentRepository;
-    private final FirebaseStorageService firebaseStorageService;
     private final ESProducer esProducer;
-    public UserService(UserRepository userRepository, UserDocumentRepository userDocumentRepository, FirebaseStorageService firebaseStorageService, ESProducer esProducer) {
+    private final DropboxService dropboxService;
+    public UserService(UserRepository userRepository,
+                       UserDocumentRepository userDocumentRepository,
+                       ESProducer esProducer, DropboxService dropboxService) {
         this.userRepository = userRepository;
         this.userDocumentRepository = userDocumentRepository;
-        this.firebaseStorageService = firebaseStorageService;
         this.esProducer = esProducer;
+        this.dropboxService = dropboxService;
     }
 
     public String syncWithEs() {
@@ -80,8 +84,7 @@ public class UserService implements UserDetailsService {
     public UserDetailsResponse retrieveProfile(String username) throws IOException {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        String pictureUrl = firebaseStorageService.getImageUrl(user);
-        return new UserDetailsResponse(user.getFirstname(), user.getLastname(),pictureUrl, user.getAbout());
+        return new UserDetailsResponse(user.getFirstname(), user.getLastname(),user.getPictureUrl(), user.getAbout());
     }
 
     @Override
@@ -99,4 +102,17 @@ public class UserService implements UserDetailsService {
         userRepository.delete(user);
     }
 
+    public void uploadProfilePicture(String name, MultipartFile multipartFile) throws IOException, DbxException {
+        User user = (User) userRepository.findByUsername(name)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String profileUrl = dropboxService.uploadImage("userProfile",name,multipartFile);
+        user.setPictureUrl(profileUrl);
+        userRepository.save(user);
+    }
+
+    public void deleteProfilePicture(String name) throws DbxException {
+        User user = (User) userRepository.findByUsername(name)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        dropboxService.deleteImage(user.getPictureUrl());
+    }
 }

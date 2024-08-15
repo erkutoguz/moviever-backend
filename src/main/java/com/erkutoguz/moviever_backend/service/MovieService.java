@@ -1,5 +1,6 @@
 package com.erkutoguz.moviever_backend.service;
 
+import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
@@ -15,7 +16,7 @@ import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,20 +36,23 @@ public class MovieService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final WatchlistRepository watchlistRepository;
-    private final FirebaseStorageService firebaseStorageService;
     private final ESProducer esProducer;
     private final MovieDocumentRepository movieDocumentRepository;
+    private final DropboxService dropboxService;
     public MovieService(MovieRepository movieRepository,
                         UserRepository userRepository,
-                        CategoryRepository categoryRepository, WatchlistRepository watchlistRepository,
-                        FirebaseStorageService firebaseStorageService, ESProducer esProducer, MovieDocumentRepository movieDocumentRepository) {
+                        CategoryRepository categoryRepository,
+                        WatchlistRepository watchlistRepository,
+                        ESProducer esProducer,
+                        MovieDocumentRepository movieDocumentRepository,
+                        DropboxService dropboxService) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.watchlistRepository = watchlistRepository;
-        this.firebaseStorageService = firebaseStorageService;
         this.esProducer = esProducer;
         this.movieDocumentRepository = movieDocumentRepository;
+        this.dropboxService = dropboxService;
     }
 
     public MovieResponse retrieveMovie(Long movieId, String username) {
@@ -64,17 +68,8 @@ public class MovieService {
     }
 
     private List<ReviewResponse> reviewMapper(List<Review> reviews)  {
-        return reviews.stream().map(r-> {
-            String pictureUrl = "";
-            try{
-                 pictureUrl = firebaseStorageService.getImageUrl(r.getUser());
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            return new ReviewResponse(r.getId(), r.getComment(),r.getCreatedAt(),r.getUpdatedAt()
-                    ,r.getUser().getUsername(),pictureUrl , r.getLikeCount());
-        }).toList();
+        return reviews.stream().map(r-> new ReviewResponse(r.getId(), r.getComment(),r.getCreatedAt(),r.getUpdatedAt()
+                ,r.getUser().getUsername(),r.getUser().getPictureUrl() , r.getLikeCount())).toList();
     }
 
 
@@ -158,12 +153,15 @@ public class MovieService {
 
     //ADMIN OPS
     @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
-    public void createMovie(CreateMovieRequest request) {
+    public void createMovie(CreateMovieRequest request) throws IOException, DbxException {
         Optional<Movie> movieExists = movieRepository.findByTitle(request.title());
         if(movieExists.isPresent()) {
             throw new DuplicateResourceException("Movie already exist");
         }
-        Movie movie = movieRepository.save(builtMovie(request));
+        Movie movie = builtMovie(request);
+        String posterUrl = dropboxService.uploadImage("moviePoster", request.title(), request.poster());
+        movie.setPictureUrl(posterUrl);
+        movieRepository.save(movie);
         esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));
     }
 
@@ -184,7 +182,6 @@ public class MovieService {
         });
         movie.setDirector(request.director());
         movie.setTitle(request.title());
-        movie.setPictureUrl(request.pictureUrl());
         movie.setRating(request.rating());
         movie.setTrailerUrl(request.trailerUrl());
         movie.setReleaseYear(request.releaseYear());
