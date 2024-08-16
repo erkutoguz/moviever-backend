@@ -16,7 +16,6 @@ public class UserDocumentController {
     public UserDocumentController(ESUserDocumentService userDocumentService) {
         this.userDocumentService = userDocumentService;
     }
-//TODO BUNU ADMIN SERVİCE'E al
     @GetMapping("/search/{partialInput}")
     public Map<String, Object> searchUsersAutoSuggest(
             @PathVariable String partialInput,

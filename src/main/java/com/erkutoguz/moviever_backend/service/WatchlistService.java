@@ -9,6 +9,7 @@ import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.exception.AccessDeniedException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.Movie;
+import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.model.Watchlist;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
@@ -17,6 +18,8 @@ import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistPreviewMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -27,14 +30,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class WatchlistService {
 
+    private static final Logger log = LoggerFactory.getLogger(WatchlistService.class);
     private final WatchlistRepository watchlistRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
@@ -56,11 +57,13 @@ public class WatchlistService {
         //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
-        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        if(!currentUser.equals(watchlist.getUser().getUsername())) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        var authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        if(!currentUser.equals(watchlist.getUser().getUsername()) && !authorities.contains(Role.ROLE_ADMIN)) {
             throw new AccessDeniedException("You don't have permission to see this watchlist");
         }
+
         watchlist.setWatchlistName(request.watchlistName());
         watchlistRepository.save(watchlist);
     }
@@ -83,8 +86,8 @@ public class WatchlistService {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
         String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
-
-        if(!currentUser.equals(watchlist.getUser().getUsername())) {
+        var authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        if(!currentUser.equals(watchlist.getUser().getUsername()) && !authorities.contains(Role.ROLE_ADMIN)) {
             throw new AccessDeniedException("You don't have permission to see this watchlist");
         }
 
@@ -113,6 +116,11 @@ public class WatchlistService {
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
 
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        var authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
+        if(!currentUser.equals(watchlist.getUser().getUsername()) && !authorities.contains(Role.ROLE_ADMIN)) {
+            throw new AccessDeniedException("You don't have permission to see this watchlist");
+        }
         List<Movie> movies = watchlist.getMovies().stream().toList();
         movies.forEach(m -> m.removeFromWatchlist(watchlist));
         movieRepository.saveAll(movies);

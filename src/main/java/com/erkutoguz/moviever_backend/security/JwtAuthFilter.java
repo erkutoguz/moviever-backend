@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-//TODO Logger var
 
 
 @Component
@@ -26,7 +25,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserService userService;
     private final JwtService jwtService;
-    private final Logger logger = LoggerFactory.getLogger(getClass());
     public JwtAuthFilter(UserService userService, JwtService jwtService) {
         this.userService = userService;
         this.jwtService = jwtService;
@@ -46,7 +44,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 token = header.substring(7);
                 username = jwtService.extractUsername(token);
             }
-            logger.info("Username {}, token {}", username, token);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails user = userService.loadUserByUsername(username);
 

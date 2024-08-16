@@ -1,9 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
-import com.erkutoguz.moviever_backend.controller.UserDocumentController;
 import com.erkutoguz.moviever_backend.dto.response.AdminUserResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
-import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
 import com.erkutoguz.moviever_backend.util.SortUserDocumentById;
@@ -28,6 +26,13 @@ public class ESUserDocumentService {
     }
 
     public void insertUserDocument(UserDocument userDocument) {
+        userDocumentRepository.save(userDocument);
+    }
+
+    public void updateUserDocumentStatus(Long userId, boolean newStatus) {
+        UserDocument userDocument = userDocumentRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User Document not found"));
+        userDocument.setEnabled(newStatus);
         userDocumentRepository.save(userDocument);
     }
 

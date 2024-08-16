@@ -3,17 +3,20 @@ package com.erkutoguz.moviever_backend.service;
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
 import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
-import com.erkutoguz.moviever_backend.exception.DuplicateResourceException;
-import com.erkutoguz.moviever_backend.exception.InvalidOtpException;
-import com.erkutoguz.moviever_backend.exception.InvalidTokenException;
-import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
+import com.erkutoguz.moviever_backend.exception.*;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.Role;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
+import jakarta.mail.AuthenticationFailedException;
 import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +29,7 @@ import java.util.Set;
 @Service
 public class AuthenticationService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
@@ -49,13 +53,22 @@ public class AuthenticationService {
     public AuthResponse loginUser(AuthRequest request) throws IOException {
         User user = (User) userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        try{
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        } catch (DisabledException e) {
+            throw new UnverifiedEmailException("You have to verify your mail");
+        } catch (BadCredentialsException e) {
+           throw new AccessDeniedException("Invalid Credentials");
+        } catch (Exception e) {
+            throw new AccessDeniedException("Something went wrong");
+        }
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
         return new AuthResponse(user.getUsername(), accessToken, refreshToken, user.getPictureUrl(), user.isEnabled());
     }
 
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public AuthResponse registerUser(CreateUserRequest request) throws MessagingException, IOException {
         User newUser = createUser(request);
 

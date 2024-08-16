@@ -32,6 +32,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(exception, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(UnverifiedEmailException.class)
+    public ResponseEntity<ExceptionResponse> handleUnverifiedEmailException(UnverifiedEmailException ex) {
+        ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        return new ResponseEntity<>(exception, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ExceptionResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
         ExceptionResponse exceptionResponse = new ExceptionResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());

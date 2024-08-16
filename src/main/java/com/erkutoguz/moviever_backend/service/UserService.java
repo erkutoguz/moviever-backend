@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
 import com.dropbox.core.DbxException;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
@@ -63,7 +64,7 @@ public class UserService implements UserDetailsService {
         return map;
     }
 
-    @CacheEvict(value = "retrieveAllUsers")
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
         // TODO exceptions to everywhere
         User user = (User) userRepository.findByUsername(username)
@@ -94,7 +95,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Admin ops
-    @CacheEvict(value = "retrieveAllUsers")
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -102,6 +103,7 @@ public class UserService implements UserDetailsService {
         userRepository.delete(user);
     }
 
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public void uploadProfilePicture(String name, MultipartFile multipartFile) throws IOException, DbxException {
         User user = (User) userRepository.findByUsername(name)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -110,9 +112,20 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public void deleteProfilePicture(String name) throws DbxException {
         User user = (User) userRepository.findByUsername(name)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         dropboxService.deleteImage(user.getPictureUrl());
+    }
+
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
+    public void updateUserStatus(UpdateUserDocumentStatusRequest request) {
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setEnabled(request.newStatus());
+        esProducer.updateUserDocumentStatus(new UpdateUserDocumentStatusRequest(request.userId(), request.newStatus()));
+        userRepository.save(user);
     }
 }

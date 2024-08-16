@@ -36,6 +36,7 @@ public class MovieController {
     @GetMapping("/{movieId}")
     public <T> T retrieveMovie(@RequestParam(name = "with-details", defaultValue = "false") Boolean withDetails,
                                        @PathVariable Long movieId) {
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         if (!withDetails) {
             return (T) movieService.retrieveMovie(movieId, username);

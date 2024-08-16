@@ -3,6 +3,7 @@ package com.erkutoguz.moviever_backend.controller;
 import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.AdminService;
@@ -86,6 +87,13 @@ public class AdminController {
     @PatchMapping("/movies/{movieId}")
     public ResponseEntity<Void> updateMovie(@PathVariable Long movieId, @RequestBody UpdateMovieRequest request) {
         adminService.updateMovie(movieId, request);
+        return new ResponseEntity<Void>(HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/users/{userId}")
+    public ResponseEntity<Void> updateUserStatus(@PathVariable Long userId,
+                                                 @RequestBody UpdateUserDocumentStatusRequest request) {
+        adminService.updateUserStatus(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 

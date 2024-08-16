@@ -3,6 +3,7 @@ package com.erkutoguz.moviever_backend.service;
 import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import org.springframework.stereotype.Service;
@@ -68,5 +69,9 @@ public class AdminService {
 
     public List<CategoryMovieCountResponse> retrieveMovieCountForEachCategory() {
         return categoryService.retrieveMovieCountForEachCategory();
+    }
+
+    public void updateUserStatus(UpdateUserDocumentStatusRequest request) {
+        userService.updateUserStatus(request);
     }
 }
