@@ -1,10 +1,7 @@
 package com.erkutoguz.moviever_backend.kafka.listener;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
-import com.erkutoguz.moviever_backend.model.MovieDocument;
-import com.erkutoguz.moviever_backend.model.ReviewDocument;
-import com.erkutoguz.moviever_backend.model.User;
-import com.erkutoguz.moviever_backend.model.UserDocument;
+import com.erkutoguz.moviever_backend.model.*;
 import com.erkutoguz.moviever_backend.service.ESMovieDocumentService;
 import com.erkutoguz.moviever_backend.service.ESUserDocumentService;
 import com.erkutoguz.moviever_backend.service.EsReviewDocumentService;

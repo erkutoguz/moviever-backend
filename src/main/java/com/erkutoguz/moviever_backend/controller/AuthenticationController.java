@@ -45,6 +45,12 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.FOUND).header(HttpHeaders.LOCATION, "http://localhost:5173/verification-success").build();
     }
 
+    @GetMapping("/logout")
+    public ResponseEntity<Void> logoutUser() {
+        authenticationService.logoutUser();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/refresh-token")
     public AuthResponse refreshToken(@RequestBody RefreshTokenRequest request) {
         return authenticationService.refreshToken(request.refreshToken());

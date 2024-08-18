@@ -65,12 +65,10 @@ public class KafkaConfiguration {
     public NewTopic addMovieTopic() {
         return TopicBuilder.name("add-movie-document").build();
     }
-
     @Bean
     public NewTopic addMovieListTopic() {
         return TopicBuilder.name("add-movie-document-list").build();
     }
-
     @Bean
     public NewTopic deleteMovieTopic() {
         return TopicBuilder.name("delete-movie-document").build();
@@ -88,5 +86,20 @@ public class KafkaConfiguration {
     public NewTopic deleteUserTopic() {
         return TopicBuilder.name("delete-user-document").build();
     }
+
+    @Bean
+    public NewTopic addReviewTopic() {
+        return TopicBuilder.name("add-review-document").build();
+    }
+    @Bean
+    public NewTopic addReviewListTopic() {
+        return TopicBuilder.name("add-review-document-list").build();
+    }
+    @Bean
+    public NewTopic deleteReviewTopic() {
+        return TopicBuilder.name("delete-review-document").build();
+    }
+
+
 
 }

@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -52,12 +53,13 @@ public class AuthenticationService {
 
     public AuthResponse loginUser(AuthRequest request) throws IOException {
         User user = (User) userRepository.findByUsername(request.username())
-                .orElseThrow(() -> new UsernameNotFoundException("User with username: " + request.username() + " not found"));
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User with username: " + request.username() + " not found"));
         try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password()));
         } catch (DisabledException e) {
-            throw new UnverifiedEmailException("You have to verify your mail");
+            throw new UnverifiedEmailException("You have to verify your mail. If you verified before, please contact us.");
         } catch (BadCredentialsException e) {
            throw new AccessDeniedException("Invalid Credentials");
         } catch (Exception e) {
@@ -78,7 +80,8 @@ public class AuthenticationService {
 
         String accessToken = jwtService.generateAccessToken(newUser);
         String refreshToken = jwtService.generateRefreshToken(newUser);
-        return new AuthResponse(newUser.getUsername(), accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
+        return new AuthResponse(newUser.getUsername(),
+                accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
     }
 
     private User createUser(CreateUserRequest request) {
@@ -101,7 +104,8 @@ public class AuthenticationService {
     }
 
     public boolean verifyRegistration(String otp) {
-        User user = userRepository.findByOtp(otp).orElseThrow(() -> new InvalidOtpException("OTP is invalid"));
+        User user = userRepository.findByOtp(otp)
+                .orElseThrow(() -> new InvalidOtpException("OTP is invalid"));
         user.setEnabled(true);
         userRepository.save(user);
         return true;
@@ -112,7 +116,14 @@ public class AuthenticationService {
         if (!jwtService.validateToken(refreshToken,username)) {
             throw new InvalidTokenException("Invalid or expired token");
         }
-        User user = (User) userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return new AuthResponse(username,jwtService.generateAccessToken(user),refreshToken, user.getPictureUrl(), user.isEnabled());
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return new AuthResponse(username,
+                jwtService.generateAccessToken(user),
+                refreshToken, user.getPictureUrl(), user.isEnabled());
+    }
+
+    public void logoutUser() {
+        SecurityContextHolder.clearContext();
     }
 }

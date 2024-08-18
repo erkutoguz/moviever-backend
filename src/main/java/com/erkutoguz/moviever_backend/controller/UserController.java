@@ -4,8 +4,6 @@ import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
-import com.erkutoguz.moviever_backend.service.DropboxService;
-import com.erkutoguz.moviever_backend.service.FirebaseStorageService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
 import org.springframework.http.HttpStatus;

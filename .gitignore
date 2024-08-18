@@ -5,6 +5,7 @@ target/
 !**/src/test/**/target/
 /src/main/resources/moviever-media-storage-firebase-adminsdk-ri2bx-aad1182aff.json
 /src/main/resources/application.yml
+logs/
 ### STS ###
 .apt_generated
 .classpath

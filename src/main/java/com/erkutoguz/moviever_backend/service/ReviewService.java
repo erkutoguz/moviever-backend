@@ -84,6 +84,7 @@ public class ReviewService {
     public LikedReviewsResponse retrieveLikedReviewsForMovieByUser(Authentication authentication, Long movieId) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         Predicate<Review> predicate = r -> r.getMovie().getId() == movieId;
         return LikeMapper.map(user.getLikedReviews().stream().filter(predicate).toList());
     }

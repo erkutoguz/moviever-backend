@@ -31,7 +31,6 @@
         "type": "text",
         "analyzer": "edge_ngram_analyzer"
       }
-
     }
   }
 }
