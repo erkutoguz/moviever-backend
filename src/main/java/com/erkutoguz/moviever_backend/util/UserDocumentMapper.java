@@ -18,6 +18,7 @@ public interface UserDocumentMapper {
         userDocument.setRoles(request.getRoles());
         userDocument.setUsername(request.getUsername());
         userDocument.setFirstName(request.getFirstname());
+        userDocument.setPictureUrl(request.getPictureUrl());
         userDocument.setLastName(request.getLastname());
         return userDocument;
     }
@@ -33,7 +34,7 @@ public interface UserDocumentMapper {
     static AdminUserResponse map(UserDocument request) {
         return new AdminUserResponse(request.getId(), request.getUsername(), request.getEmail(),
                 request.getFirstName(), request.getLastName(), request.isEnabled(),
-                request.getRoles().stream().map(Role::getAuthority).collect(Collectors.toSet()));
+                request.getRoles().stream().map(Role::getAuthority).collect(Collectors.toSet()), request.getPictureUrl());
     }
 
     static List<AdminUserResponse> mapUserDocument(List<UserDocument> request) {

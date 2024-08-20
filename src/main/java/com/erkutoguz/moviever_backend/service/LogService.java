@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
 
+import com.erkutoguz.moviever_backend.dto.response.LogResponse;
 import com.erkutoguz.moviever_backend.exception.InternalServerException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -13,10 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class LogService {
@@ -30,7 +28,14 @@ public class LogService {
         String rootPath = System.getProperty("user.dir");
         File folder = new File(rootPath+"/logs");
         List<String> logList = Arrays.stream(folder.list()).filter(l -> l.startsWith(type)).toList();
-        Page<String> logsPage =  new PageImpl<>(logList.reversed());
+
+        List<LogResponse> logs = new ArrayList<>();
+
+        for (int i = 0; i < logList.size(); i++) {
+            logs.add(new LogResponse(i, logList.get(i)));
+        }
+
+        Page<LogResponse> logsPage =  new PageImpl<>(logs.reversed());
         map.put("logs", logsPage.getContent());
         map.put("totalItems", logsPage.getTotalElements());
         map.put("totalPages", logsPage.getTotalPages());

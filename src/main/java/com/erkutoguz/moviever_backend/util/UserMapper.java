@@ -17,6 +17,6 @@ public interface UserMapper {
     static AdminUserResponse map(User user) {
         return new AdminUserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getFirstname(),
                 user.getLastname(), user.isEnabled(), user.getRoles()
-                .stream().map(Role::getAuthority).collect(Collectors.toSet()));
+                .stream().map(Role::getAuthority).collect(Collectors.toSet()), user.getPictureUrl());
     }
 }

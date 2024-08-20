@@ -12,7 +12,7 @@ public interface MovieMapper {
         if (movie == null) return null;
         return new MovieResponse(movie.getId(), movie.getTitle(),
                 movie.getReleaseYear(), movie.getRating(),movie.getPictureUrl(),
-                movie.getTrailerUrl(),movie.getLikeCount(), CategoryMapper.map(movie.getCategories()));
+                movie.getTrailerUrl(),movie.getViewCount(), movie.getLikeCount(), CategoryMapper.map(movie.getCategories()));
     }
     static List<MovieResponse> map(List<Movie> movieList){
         if (movieList == null) return List.of();

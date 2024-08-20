@@ -1,12 +1,11 @@
 package com.erkutoguz.moviever_backend.service;
 
-import com.erkutoguz.moviever_backend.dto.response.AdminUserResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieDocumentResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
-import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.repository.MovieDocumentRepository;
-import com.erkutoguz.moviever_backend.util.*;
+import com.erkutoguz.moviever_backend.util.ESUtil;
+import com.erkutoguz.moviever_backend.util.SortMovieDocumentById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 

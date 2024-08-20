@@ -51,6 +51,12 @@ public class MovieController {
         return movieService.retrieveMostLikedMovies(page, size);
     }
 
+    @GetMapping("/most-viewed-movies")
+    public Map<String, Object> retrieveMostViewedMovies(@RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "12") int size) {
+        return movieService.retrieveMostViewedMovies(page, size);
+    }
+
     @GetMapping("/new-movies")
     public Map<String, Object> retrieveNewMovies(@RequestParam(defaultValue = "0") int page,
                                                  @RequestParam(defaultValue = "12") int size) {

@@ -35,7 +35,7 @@ public class Movie {
 
     @ManyToMany(mappedBy = "likedMovies")
     private List<User> liked;
-
+    private long viewCount;
     private int likeCount = 0;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -92,6 +92,14 @@ public class Movie {
 
     public void setReleaseYear(int releaseYear) {
         this.releaseYear = releaseYear;
+    }
+
+    public long getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(long viewCount) {
+        this.viewCount = viewCount;
     }
 
     public int getLikeCount() {
@@ -190,5 +198,8 @@ public class Movie {
     public void addCategory(Category category) {
         this.categories.add(category);
         category.addMovie(this);
+    }
+    public void addView() {
+        this.viewCount++;
     }
 }

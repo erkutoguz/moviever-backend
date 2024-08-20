@@ -23,6 +23,6 @@ public class ReviewDocumentController {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "1") int size)
             throws IOException {
-        return esReviewDocumentService.searchReviewAutoSuggest(partialInput, page, size);
+        return esReviewDocumentService.searchReviewAutoSuggestV2(partialInput, page, size);
     }
 }

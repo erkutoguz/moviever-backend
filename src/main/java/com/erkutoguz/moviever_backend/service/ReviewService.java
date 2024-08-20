@@ -48,7 +48,7 @@ public class ReviewService {
 
     public Map<String, Object> retrieveAllReviews(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        final Page<Review> reviews = reviewRepository.findAllByOrderByIdAsc(pageable);
+        final Page<Review> reviews = reviewRepository.findAllByOrderByIdDesc(pageable);
 
         Map<String, Object> map = new HashMap<>();
         map.put("reviews", ReviewMapper.map(reviews.getContent()));
@@ -58,8 +58,10 @@ public class ReviewService {
     }
 
     public void makeReview(Long movieId, ReviewRequest request, Authentication authentication) {
-        Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        User user = (User) userRepository.findByUsername(authentication.getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        User user = (User) userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         Review review = new Review();
         review.setComment(request.comment());
         review.setMovie(movie);

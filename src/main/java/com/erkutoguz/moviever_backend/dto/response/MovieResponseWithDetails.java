@@ -4,5 +4,5 @@ import java.util.Set;
 
 public record MovieResponseWithDetails(Long id, String title, String director,  int releaseYear,
                                        double rating, String pictureUrl,String trailerUrl,
-                                       int likeCount, boolean isUserLiked, Set<CategoryResponse> categories) {
+                                       long viewCount, int likeCount, boolean isUserLiked, Set<CategoryResponse> categories) {
 }

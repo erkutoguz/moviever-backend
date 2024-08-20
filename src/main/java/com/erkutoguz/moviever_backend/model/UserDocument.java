@@ -30,7 +30,7 @@ public class UserDocument {
     private String lastName;
 
     private boolean enabled;
-
+    private String pictureUrl;
     private Set<Role> roles;
 
     public Long getId() {
@@ -47,6 +47,14 @@ public class UserDocument {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
     }
 
     public String getEmail() {

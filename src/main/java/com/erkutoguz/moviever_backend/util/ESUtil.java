@@ -23,6 +23,27 @@ public class ESUtil {
         Criteria query = criteria;
         return () -> new CriteriaQuery(query);
     }
+    public static Supplier<Query> createAutoSuggestCriteriaQueryForReview(String partialInput) {
+        if (partialInput == null || partialInput.isEmpty()) {
+            throw new IllegalArgumentException("Invalid input");
+        }
+        Criteria usernameCriteria = new Criteria("username");
+        for(String s : partialInput.split("[\\s.,]+")){
+            usernameCriteria.contains(s);
+        }
+        Criteria movieNameCriteria = new Criteria("movieName");
+        for(String s :  partialInput.split("[\\s.,]+")) {
+            movieNameCriteria.contains(s);
+        }
+        Criteria reviewCriteria = new Criteria("review");
+        for(String s :  partialInput.split("[\\s.,]+")) {
+            reviewCriteria.contains(s);
+        }
+
+        Criteria finalCriteria = movieNameCriteria.or(usernameCriteria).or(reviewCriteria);
+
+        return () -> new CriteriaQuery(finalCriteria);
+    }
 
 
 

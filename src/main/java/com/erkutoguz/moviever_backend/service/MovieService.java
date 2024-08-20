@@ -72,14 +72,26 @@ public class MovieService {
                 ,r.getUser().getUsername(),r.getUser().getPictureUrl() , r.getLikeCount())).toList();
     }
 
-
+    @CacheEvict(value = "mostViewedMovies", allEntries = true)
     public MovieResponseWithDetails retrieveMovieWithDetails(Long movieId, String username) {
         Movie movie = movieRepository.findById(movieId).orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         UserDetails user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
+        movie.addView();
+        movieRepository.save(movie);
         boolean isUserLiked = movie.getLiked().contains(user);
         return DetailedMovieMapper.map(movie, isUserLiked);
+    }
+
+    @Cacheable(value = "mostViewedMovies", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize",unless = "#result==null")
+    public Map<String, Object> retrieveMostViewedMovies(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<Movie> mostViewedMovies = movieRepository.findAllByOrderByViewCountDesc(pageable);
+        Map<String, Object> map = new HashMap<>();
+        map.put("movies", MovieMapper.map(mostViewedMovies));
+        map.put("totalItems", mostViewedMovies.getTotalElements());
+        map.put("totalPages", mostViewedMovies.getTotalPages());
+        return map;
     }
 
     @Cacheable(value = "mostLikedMovies", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize",unless = "#result==null")
@@ -128,7 +140,7 @@ public class MovieService {
         return map;
     }
 
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void likeMovie(Long movieId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -139,7 +151,7 @@ public class MovieService {
         movieRepository.save(movie);
     }
 
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void unlikeMovie(Long movieId, Authentication authentication) {
         User user = (User) userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -152,7 +164,7 @@ public class MovieService {
 
 
     //ADMIN OPS
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void createMovie(CreateMovieRequest request) throws IOException, DbxException {
         Optional<Movie> movieExists = movieRepository.findByTitle(request.title());
         if(movieExists.isPresent()) {
@@ -165,7 +177,7 @@ public class MovieService {
         esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));
     }
 
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void createMultipleMovies(List<CreateMovieRequest> request) {
         request.forEach(r -> {
             if(movieRepository.findByTitle(r.title()).isPresent()) throw new DuplicateResourceException("Movie already exist");
@@ -188,7 +200,7 @@ public class MovieService {
         return movie;
     }
 
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void deleteMovie(Long movieId){
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
@@ -204,7 +216,7 @@ public class MovieService {
         movieRepository.delete(movie);
     }
 
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies"}, allEntries = true)
+    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));

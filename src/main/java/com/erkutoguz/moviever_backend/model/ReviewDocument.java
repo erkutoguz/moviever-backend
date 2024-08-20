@@ -14,7 +14,7 @@ public class ReviewDocument {
     @Id
     private Long id;
 
-    private  String username;
+    private String username;
 
     private Long movieId;
 

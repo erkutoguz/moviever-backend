@@ -1,6 +1,7 @@
 package com.erkutoguz.moviever_backend.aspect;
 
 import com.erkutoguz.moviever_backend.dto.log.AuthLog;
+import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.JoinPoint;
@@ -13,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+
 
 @Aspect
 @Component
@@ -29,15 +31,26 @@ public class AuthAspect {
         Object proceed = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        Authentication authenticationAfter = SecurityContextHolder.getContext().getAuthentication();
+
         AuthLog log = new AuthLog();
-        log.setUsername(authenticationAfter.getName());
+        String username = "";
+        if(joinPoint.getSignature().getName().equals("registerUser")
+                || joinPoint.getSignature().getName().equals("registerUser")) {
+            AuthRequest authRequest = (AuthRequest) joinPoint.getArgs()[0];
+            username = authRequest.username();
+        } else if(joinPoint.getSignature().getName().equals("logoutUser")
+                || joinPoint.getSignature().getName().equals("refreshToken")) {
+            username = SecurityContextHolder.getContext().getAuthentication().getName();
+        }
+
+        log.setUsername(username);
         log.setMethodSignature(joinPoint.getSignature().getName());
         log.setExecutionTime(executionTime);
 
         if (attributes != null) {
             HttpServletRequest request = attributes.getRequest();
             HttpServletResponse response = attributes.getResponse();
+
             log.setRequestUrl(request.getRequestURL().toString());
             log.setRequestMethod(request.getMethod());
             log.setIpAddress(request.getRemoteAddr());
