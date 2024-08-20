@@ -171,7 +171,10 @@ public class MovieService {
             throw new DuplicateResourceException("Movie already exist");
         }
         Movie movie = builtMovie(request);
-        String posterUrl = dropboxService.uploadImage("moviePoster", request.title(), request.poster());
+        String posterUrl = "";
+        if(request.poster() != null) {
+            posterUrl = dropboxService.uploadImage("moviePoster", request.title(), request.poster());
+        }
         movie.setPictureUrl(posterUrl);
         movieRepository.save(movie);
         esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));

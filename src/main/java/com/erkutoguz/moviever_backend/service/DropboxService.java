@@ -7,7 +7,11 @@ import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 
 @Service
 public class DropboxService {
@@ -40,6 +44,11 @@ public class DropboxService {
         SharedLinkMetadata builder = client.sharing().createSharedLinkWithSettings(path);
         String dbxUrl = builder.getUrl();
         return dbxUrl.substring(0, dbxUrl.lastIndexOf("?")) + "?dl=1";
+    }
+
+
+    private String uploadImageToDropbox2(String folderPath, String name, MultipartFile image) throws DbxException, IOException {
+        return null;
     }
 
 

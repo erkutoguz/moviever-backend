@@ -35,7 +35,7 @@ public class AuthAspect {
         AuthLog log = new AuthLog();
         String username = "";
         if(joinPoint.getSignature().getName().equals("registerUser")
-                || joinPoint.getSignature().getName().equals("registerUser")) {
+                || joinPoint.getSignature().getName().equals("loginUser")) {
             AuthRequest authRequest = (AuthRequest) joinPoint.getArgs()[0];
             username = authRequest.username();
         } else if(joinPoint.getSignature().getName().equals("logoutUser")

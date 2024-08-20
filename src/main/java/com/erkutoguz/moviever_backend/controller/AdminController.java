@@ -4,6 +4,7 @@ import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
+import com.erkutoguz.moviever_backend.dto.response.AdminIpAddressesResponse;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.AdminService;
@@ -88,6 +89,11 @@ public class AdminController {
     public ResponseEntity<Void> updateMovie(@PathVariable Long movieId, @RequestBody UpdateMovieRequest request) {
         adminService.updateMovie(movieId, request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/users/ip-addresses")
+    public List<AdminIpAddressesResponse> retrieveIpAddresses() {
+        return adminService.retrieveIpAddresses();
     }
 
     @PatchMapping("/users/{userId}")

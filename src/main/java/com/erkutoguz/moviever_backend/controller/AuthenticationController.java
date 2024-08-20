@@ -44,8 +44,9 @@ public class AuthenticationController {
         } else if (clientIpAddress == null) {
             clientIpAddress = request1.getRemoteAddr();
         }
-        log.info(clientIpAddress);
-        return authenticationService.loginUser(request);
+        //TODO burada static ip kullanma prod'a geçince
+        String ipAddr = "5.176.36.119";
+        return authenticationService.loginUser(request, ipAddr);
     }
 
     @GetMapping("/verify")

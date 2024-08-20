@@ -65,6 +65,12 @@ public class User implements UserDetails {
     private List<Movie> likedMovies;
 
     @ManyToMany
+    @JoinTable(name = "user_ip_addresses",
+    joinColumns = @JoinColumn(name = "user_id"),
+    inverseJoinColumns = @JoinColumn(name = "ip_address_id"))
+    private Set<IpAddress> ipAddresses;
+
+    @ManyToMany
     @JoinTable(
             name = "liked_reviews",
             joinColumns = @JoinColumn(name = "user_id"),
@@ -179,6 +185,14 @@ public class User implements UserDetails {
 
     public List<Review> getLikedReviews() {
         return likedReviews;
+    }
+
+    public Set<IpAddress> getIpAddresses() {
+        return ipAddresses;
+    }
+
+    public void setIpAddresses(Set<IpAddress> ipAddresses) {
+        this.ipAddresses = ipAddresses;
     }
 
     public void setLikedReviews(List<Review> likedReviews) {

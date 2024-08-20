@@ -4,7 +4,9 @@ import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
+import com.erkutoguz.moviever_backend.dto.response.AdminIpAddressesResponse;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
+import com.erkutoguz.moviever_backend.dto.response.IpAddressResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import org.springframework.stereotype.Service;
 
@@ -19,15 +21,17 @@ public class AdminService {
     private final ReviewService reviewService;
     private final WatchlistService watchlistService;
     private final CategoryService categoryService;
+    private final IpAddressService ipAddressService;
     public AdminService(MovieService movieService,
                         UserService userService,
                         ReviewService reviewService,
-                        WatchlistService watchlistService, CategoryService categoryService) {
+                        WatchlistService watchlistService, CategoryService categoryService, IpAddressService ipAddressService) {
         this.movieService = movieService;
         this.userService = userService;
         this.reviewService = reviewService;
         this.watchlistService = watchlistService;
         this.categoryService = categoryService;
+        this.ipAddressService = ipAddressService;
     }
 
     public Map<String, Object> retrieveAllUsers(int page, int size) {
@@ -66,12 +70,15 @@ public class AdminService {
         userService.deleteUser(userId);
     }
 
-
     public List<CategoryMovieCountResponse> retrieveMovieCountForEachCategory() {
         return categoryService.retrieveMovieCountForEachCategory();
     }
 
     public void updateUserStatus(UpdateUserDocumentStatusRequest request) {
         userService.updateUserStatus(request);
+    }
+
+    public List<AdminIpAddressesResponse> retrieveIpAddresses() {
+        return ipAddressService.retrieveIpAddresses();
     }
 }
