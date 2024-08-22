@@ -24,11 +24,11 @@ import java.util.function.Supplier;
 
 
 @Service
-public class EsReviewDocumentService {
+public class ESReviewDocumentService {
     private final ReviewDocumentRepository reviewDocumentRepository;
     private final ElasticsearchOperations elasticsearchOperations;
 
-    public EsReviewDocumentService(ReviewDocumentRepository reviewDocumentRepository, ElasticsearchOperations elasticsearchOperations) {
+    public ESReviewDocumentService(ReviewDocumentRepository reviewDocumentRepository, ElasticsearchOperations elasticsearchOperations) {
         this.reviewDocumentRepository = reviewDocumentRepository;
         this.elasticsearchOperations = elasticsearchOperations;
     }

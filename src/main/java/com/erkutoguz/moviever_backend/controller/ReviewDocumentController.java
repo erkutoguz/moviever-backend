@@ -1,7 +1,7 @@
 package com.erkutoguz.moviever_backend.controller;
 
 
-import com.erkutoguz.moviever_backend.service.EsReviewDocumentService;
+import com.erkutoguz.moviever_backend.service.ESReviewDocumentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -11,9 +11,9 @@ import java.util.Map;
 @RequestMapping("/api/v1/reviews")
 public class ReviewDocumentController {
 
-    private final EsReviewDocumentService esReviewDocumentService;
+    private final ESReviewDocumentService esReviewDocumentService;
 
-    public ReviewDocumentController(EsReviewDocumentService esReviewDocumentService) {
+    public ReviewDocumentController(ESReviewDocumentService esReviewDocumentService) {
         this.esReviewDocumentService = esReviewDocumentService;
     }
 

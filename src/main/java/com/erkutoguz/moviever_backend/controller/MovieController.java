@@ -76,8 +76,10 @@ public class MovieController {
     }
 
     @GetMapping("/{movieId}/reviews")
-    public List<ReviewResponse> retrieveMovieReviews(@PathVariable Long movieId) {
-        return movieService.retrieveMovieReviews(movieId);
+    public Map<String, Object> retrieveMovieReviews(@PathVariable Long movieId,
+                                                    @RequestParam(defaultValue = "0") int page,
+                                                    @RequestParam(defaultValue = "12") int size) {
+        return movieService.retrieveMovieReviews(movieId,page,size);
     }
 
     @PostMapping("/{movieId}/reviews")

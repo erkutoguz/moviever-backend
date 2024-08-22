@@ -18,10 +18,7 @@ import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.springframework.cache.annotation.CacheEvict;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -61,10 +58,17 @@ public class MovieService {
         return MovieMapper.map(movie);
     }
 
-    public List<ReviewResponse> retrieveMovieReviews(Long movieId) {
+    public Map<String, Object> retrieveMovieReviews(Long movieId, int page, int size) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        return SortReviewResponseByLikeCount.sortByLike(reviewMapper(movie.getReviews()));
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Review> reviewPage = new PageImpl<>(movie.getReviews());
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("reviews", SortReviewResponseByLikeCount.sortByLike(reviewMapper(reviewPage.getContent())));
+        map.put("totalItems", reviewPage.getTotalElements());
+        map.put("totalPages", reviewPage.getTotalPages());
+        return map;
     }
 
     private List<ReviewResponse> reviewMapper(List<Review> reviews)  {

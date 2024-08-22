@@ -4,7 +4,7 @@ import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusReques
 import com.erkutoguz.moviever_backend.model.*;
 import com.erkutoguz.moviever_backend.service.ESMovieDocumentService;
 import com.erkutoguz.moviever_backend.service.ESUserDocumentService;
-import com.erkutoguz.moviever_backend.service.EsReviewDocumentService;
+import com.erkutoguz.moviever_backend.service.ESReviewDocumentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -18,10 +18,10 @@ public class ESListener {
     private static final Logger log = LoggerFactory.getLogger(ESListener.class);
     private final ESMovieDocumentService esMovieDocumentService;
     private final ESUserDocumentService esUserDocumentService;
-    private final EsReviewDocumentService esReviewDocumentService;
+    private final ESReviewDocumentService esReviewDocumentService;
     public ESListener(ESMovieDocumentService esMovieDocumentService,
                       ESUserDocumentService esUserDocumentService,
-                      EsReviewDocumentService esReviewDocumentService) {
+                      ESReviewDocumentService esReviewDocumentService) {
         this.esMovieDocumentService = esMovieDocumentService;
         this.esUserDocumentService = esUserDocumentService;
         this.esReviewDocumentService = esReviewDocumentService;
