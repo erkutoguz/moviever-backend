@@ -1,4 +1,9 @@
 package com.erkutoguz.moviever_backend.dto.request;
 
-public record UpdateUserDocumentStatusRequest(Long userId, boolean newStatus) {
+import jakarta.validation.constraints.NotNull;
+
+public record UpdateUserDocumentStatusRequest(
+        @NotNull(message = "User id cannot be empty")
+        Long userId,
+        boolean newStatus) {
 }

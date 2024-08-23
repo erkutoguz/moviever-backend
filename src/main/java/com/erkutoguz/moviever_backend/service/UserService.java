@@ -76,7 +76,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Admin ops
-    @CacheEvict(value = "retrieveAllUsers, retrieveAllWatchlists", allEntries = true)
+    @CacheEvict(value = {"retrieveAllUsers", "retrieveAllWatchlists"}, allEntries = true)
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

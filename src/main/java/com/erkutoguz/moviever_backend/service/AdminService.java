@@ -6,7 +6,6 @@ import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.AdminIpAddressesResponse;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
-import com.erkutoguz.moviever_backend.dto.response.IpAddressResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import org.springframework.stereotype.Service;
 

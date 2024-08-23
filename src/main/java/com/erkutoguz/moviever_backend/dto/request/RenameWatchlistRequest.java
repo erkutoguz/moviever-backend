@@ -1,7 +1,7 @@
 package com.erkutoguz.moviever_backend.dto.request;
 
-public record RenameWatchlistRequest(String watchlistName) {
-    public RenameWatchlistRequest{
-        watchlistName = watchlistName != null ? watchlistName.trim() : null;
-    }
+import jakarta.validation.constraints.NotBlank;
+
+public record RenameWatchlistRequest(@NotBlank(message = "Watchlist name can not be empty") String watchlistName) {
+
 }

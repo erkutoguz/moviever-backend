@@ -170,7 +170,7 @@ public class MovieService {
     //ADMIN OPS
     @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void createMovie(CreateMovieRequest request) throws IOException, DbxException {
-        Optional<Movie> movieExists = movieRepository.findByTitle(request.title());
+        Optional<Movie> movieExists = movieRepository.findByTitleIgnoreCase(request.title());
         if(movieExists.isPresent()) {
             throw new DuplicateResourceException("Movie already exist");
         }
@@ -187,7 +187,7 @@ public class MovieService {
     @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
     public void createMultipleMovies(List<CreateMovieRequest> request) {
         request.forEach(r -> {
-            if(movieRepository.findByTitle(r.title()).isPresent()) throw new DuplicateResourceException("Movie already exist");
+            if(movieRepository.findByTitleIgnoreCase(r.title()).isPresent()) throw new DuplicateResourceException("Movie already exist");
         });
         List<Movie> movies = request.stream().map(this::builtMovie).toList();
         List<Movie> savedMovies = movieRepository.saveAll(movies);
@@ -227,7 +227,11 @@ public class MovieService {
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        request.updateMovie(movie);
+        movie.setPictureUrl(request.pictureUrl());
+        movie.setRating(request.rating());
+        movie.setTitle(request.title());
+        movie.setDirector(request.director());
+        movie.setReleaseYear(request.releaseYear());
         movieRepository.save(movie);
     }
 

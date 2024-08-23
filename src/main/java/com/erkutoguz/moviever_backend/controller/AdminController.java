@@ -6,10 +6,16 @@ import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.AdminIpAddressesResponse;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
+import com.erkutoguz.moviever_backend.exception.BadRequestException;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.AdminService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +30,11 @@ import java.util.Set;
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+    private final Validator validator;
     private final AdminService adminService;
-    public AdminController(AdminService adminService) {
+    public AdminController(Validator validator, AdminService adminService) {
+        this.validator = validator;
         this.adminService = adminService;
     }
 
@@ -69,12 +78,24 @@ public class AdminController {
         Set<CategoryType> categories = new ObjectMapper()
                 .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
         CreateMovieRequest request = new CreateMovieRequest(title,director,releaseYear,poster,trailerUrl,rating,categories);
+        Set<ConstraintViolation<CreateMovieRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            StringBuilder violationMessages = new StringBuilder();
+
+            for (ConstraintViolation<CreateMovieRequest> violation : violations) {
+                violationMessages.append(violation.getPropertyPath())
+                        .append(" : ")
+                        .append(violation.getMessage())
+                        .append("\n");
+            }
+            throw new BadRequestException(violationMessages.toString());
+        }
         adminService.createMovie(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
     @PostMapping("/movies-multiple")
-    public ResponseEntity<Void> createMultipleMovies(@RequestBody List<CreateMovieRequest> request) {
+    public ResponseEntity<Void> createMultipleMovies(@Valid @RequestBody List<CreateMovieRequest> request) {
         adminService.createMultipleMovies(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
@@ -86,7 +107,7 @@ public class AdminController {
     }
 
     @PatchMapping("/movies/{movieId}")
-    public ResponseEntity<Void> updateMovie(@PathVariable Long movieId, @RequestBody UpdateMovieRequest request) {
+    public ResponseEntity<Void> updateMovie(@PathVariable Long movieId,@Valid @RequestBody UpdateMovieRequest request) {
         adminService.updateMovie(movieId, request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
@@ -98,7 +119,7 @@ public class AdminController {
 
     @PatchMapping("/users/{userId}")
     public ResponseEntity<Void> updateUserStatus(@PathVariable Long userId,
-                                                 @RequestBody UpdateUserDocumentStatusRequest request) {
+                                                 @Valid @RequestBody UpdateUserDocumentStatusRequest request) {
         adminService.updateUserStatus(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }

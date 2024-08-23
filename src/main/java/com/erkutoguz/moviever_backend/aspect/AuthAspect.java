@@ -2,6 +2,7 @@ package com.erkutoguz.moviever_backend.aspect;
 
 import com.erkutoguz.moviever_backend.dto.log.AuthLog;
 import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
+import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.aspectj.lang.JoinPoint;
@@ -34,11 +35,13 @@ public class AuthAspect {
 
         AuthLog log = new AuthLog();
         String username = "";
-        if(joinPoint.getSignature().getName().equals("registerUser")
-                || joinPoint.getSignature().getName().equals("loginUser")) {
+        if(joinPoint.getSignature().getName().equals("registerUser")) {
+            CreateUserRequest userRequest = (CreateUserRequest) joinPoint.getArgs()[0];
+            username = userRequest.username();
+        } else if (joinPoint.getSignature().getName().equals("loginUser")) {
             AuthRequest authRequest = (AuthRequest) joinPoint.getArgs()[0];
             username = authRequest.username();
-        } else if(joinPoint.getSignature().getName().equals("logoutUser")
+        }else if(joinPoint.getSignature().getName().equals("logoutUser")
                 || joinPoint.getSignature().getName().equals("refreshToken")) {
             username = SecurityContextHolder.getContext().getAuthentication().getName();
         }

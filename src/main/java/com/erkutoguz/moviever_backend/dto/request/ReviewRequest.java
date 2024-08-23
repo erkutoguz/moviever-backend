@@ -1,7 +1,7 @@
 package com.erkutoguz.moviever_backend.dto.request;
 
-public record ReviewRequest(String comment) {
-    public ReviewRequest{
-        comment = comment != null ? comment.trim() : null;
-    }
+import jakarta.validation.constraints.NotBlank;
+
+public record ReviewRequest(@NotBlank(message = "Review can not be empty")String comment) {
+
 }

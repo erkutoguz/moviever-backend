@@ -1,7 +1,8 @@
 package com.erkutoguz.moviever_backend.dto.request;
 
-public record RefreshTokenRequest(String refreshToken) {
-    public RefreshTokenRequest{
-        refreshToken = refreshToken != null ? refreshToken.trim() : null;
-    }
+import jakarta.validation.constraints.NotBlank;
+
+public record RefreshTokenRequest(
+        @NotBlank(message = "Token can not be empty")
+        String refreshToken) {
 }

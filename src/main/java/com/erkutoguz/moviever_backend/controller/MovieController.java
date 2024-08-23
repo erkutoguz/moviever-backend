@@ -6,6 +6,7 @@ import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.MovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -84,7 +85,7 @@ public class MovieController {
 
     @PostMapping("/{movieId}/reviews")
     public ResponseEntity<Void> makeReview(@PathVariable Long movieId,
-                                           @RequestBody ReviewRequest request) {
+                                           @Valid @RequestBody ReviewRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         reviewService.makeReview(movieId, request, authentication);
        return new ResponseEntity<Void>(HttpStatus.CREATED);

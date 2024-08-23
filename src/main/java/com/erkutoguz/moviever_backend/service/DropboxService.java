@@ -7,11 +7,7 @@ import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.IOException;
 
 @Service
 public class DropboxService {

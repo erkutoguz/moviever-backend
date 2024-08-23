@@ -25,5 +25,5 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
         @Query("SELECT m FROM Movie m JOIN m.categories c WHERE c.categoryName = :categoryName")
         Page<Movie> findByCategoryNameByOrderByIdDesc(@Param("categoryName") CategoryType categoryName, Pageable pageable);
 
-        Optional<Movie> findByTitle(String title);
+        Optional<Movie> findByTitleIgnoreCase(String title);
 }

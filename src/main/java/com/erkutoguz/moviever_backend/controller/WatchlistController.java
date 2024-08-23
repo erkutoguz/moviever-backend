@@ -7,6 +7,7 @@ import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,21 +45,21 @@ public class WatchlistController {
     }
 
     @PatchMapping("/{watchlistId}")
-    public ResponseEntity<Void> renameWatchlist(@RequestBody RenameWatchlistRequest request,
+    public ResponseEntity<Void> renameWatchlist(@Valid @RequestBody RenameWatchlistRequest request,
                                                 @PathVariable Long watchlistId) {
         watchlistService.renameWatchlist(watchlistId, request);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping
-    public ResponseEntity<Void> createWatchlist(@RequestBody CreateWatchlistRequest request) {
+    public ResponseEntity<Void> createWatchlist(@Valid @RequestBody CreateWatchlistRequest request) {
         watchlistService.createWatchlist(request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
     @PostMapping("/{watchlistId}")
     public ResponseEntity<Void> addMovieToWatchlist(@PathVariable Long watchlistId,
-                                                    @RequestBody WatchlistMovieRequest request) {
+                                                    @Valid @RequestBody WatchlistMovieRequest request) {
         watchlistService.addMovieToWatchlist(watchlistId, request);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }

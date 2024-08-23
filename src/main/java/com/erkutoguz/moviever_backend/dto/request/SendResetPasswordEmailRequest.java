@@ -1,4 +1,10 @@
 package com.erkutoguz.moviever_backend.dto.request;
 
-public record SendResetPasswordEmailRequest(String email) {
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+
+public record SendResetPasswordEmailRequest(
+        @NotBlank(message = "Email can not be empty")
+        @Email(message = "Invalid email")
+        String email) {
 }
