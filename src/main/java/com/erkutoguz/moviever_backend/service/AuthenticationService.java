@@ -1,9 +1,7 @@
 package com.erkutoguz.moviever_backend.service;
 
-import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
-import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
+import com.erkutoguz.moviever_backend.dto.request.*;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
-import com.erkutoguz.moviever_backend.dto.response.IpAddressResponse;
 import com.erkutoguz.moviever_backend.exception.*;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.IpAddress;
@@ -16,11 +14,8 @@ import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import jakarta.mail.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -30,13 +25,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -125,6 +117,27 @@ public class AuthenticationService {
                 accessToken, refreshToken, newUser.getPictureUrl(), newUser.isEnabled());
     }
 
+    public void sendResetPasswordEmail(SendResetPasswordEmailRequest request) throws MessagingException, UnsupportedEncodingException {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        String resetPassToken = jwtService.generateResetPasswordToken(user);
+        emailVerificationService.sendResetPasswordEmail(user.getEmail(), resetPassToken);
+    }
+
+    public void resetUserPassword(ResetPasswordRequest request) {
+        String username = jwtService.extractUsername(request.token());
+
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if(!jwtService.validateToken(request.token(),username)) {
+            throw new InvalidTokenException("Invalid or expired token");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
     private User createUser(CreateUserRequest request) {
         if(userRepository.findByUsername(request.username()).isPresent()) {
             throw new DuplicateResourceException("Username exists");
@@ -142,6 +155,25 @@ public class AuthenticationService {
         authorities.add(Role.ROLE_USER);
         newUser.setRoles(authorities);
         return userRepository.save(newUser);
+    }
+
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
+    public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
+        // TODO exceptions to everywhere
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(request.firstname() != null && !request.firstname().isEmpty()) {
+            user.setFirstname(request.firstname());
+        }
+        if(request.lastname() != null && !request.lastname().isEmpty()) {
+            user.setLastname(request.lastname());
+        }
+        user.setAbout(request.about());
+        if(request.password() != null && !request.password().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
+        userRepository.save(user);
+        return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
     }
 
     public boolean verifyRegistration(String otp) {
@@ -167,4 +199,6 @@ public class AuthenticationService {
     public void logoutUser() {
         SecurityContextHolder.clearContext();
     }
+
+
 }

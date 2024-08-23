@@ -4,6 +4,7 @@ import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
+import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -21,9 +22,13 @@ public class UserController {
 
     private final UserService userService;
     private final ReviewService reviewService;
-    public UserController(UserService userService, ReviewService reviewService) {
+    private final AuthenticationService authenticationService;
+    public UserController(UserService userService,
+                          ReviewService reviewService,
+                          AuthenticationService authenticationService) {
         this.userService = userService;
         this.reviewService = reviewService;
+        this.authenticationService = authenticationService;
     }
 
     @GetMapping("/sync-with-es")
@@ -34,7 +39,7 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<String> updateUser(@RequestBody UpdateUserRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return userService.updateUser(authentication.getName(), request);
+        return authenticationService.updateUser(authentication.getName(), request);
     }
 
     @PostMapping("/profile/avatar")

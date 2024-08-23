@@ -24,6 +24,9 @@ public class JwtService {
     @Value("${spring.security.ACCESS_EXPIRATION}")
     private int ACCESS_EXPIRATION;
 
+    @Value("${spring.security.RESET_PASSWORD_EXPIRATION}")
+    private int RESET_PASSWORD_EXPIRATION;
+
     @Value("${spring.security.REFRESH_EXPIRATION}")
     private int REFRESH_EXPIRATION;
 
@@ -31,6 +34,11 @@ public class JwtService {
     public String generateAccessToken(UserDetails user){
         HashMap<String, Object> claims = new HashMap<>();
         return buildToken(claims, ACCESS_EXPIRATION, user);
+    }
+
+    public String generateResetPasswordToken(UserDetails user) {
+        HashMap<String, Object> claims = new HashMap<>();
+        return buildToken(claims, RESET_PASSWORD_EXPIRATION, user);
     }
 
     public String generateRefreshToken(UserDetails user) {

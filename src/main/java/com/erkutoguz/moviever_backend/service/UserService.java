@@ -2,7 +2,6 @@ package com.erkutoguz.moviever_backend.service;
 
 import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
-import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
@@ -16,8 +15,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -52,6 +49,7 @@ public class UserService implements UserDetailsService {
 
     }
 
+
     @Cacheable(value = "retrieveAllUsers", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize")
     public Map<String, Object> retrieveAllUsers(int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -64,23 +62,6 @@ public class UserService implements UserDetailsService {
         return map;
     }
 
-    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
-    public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
-        // TODO exceptions to everywhere
-        User user = (User) userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        if(!request.firstname().isEmpty()) {
-            user.setFirstname(request.firstname());
-        }
-        if(!request.lastname().isEmpty()) {
-            user.setLastname(request.lastname());
-        }
-        if(!request.about().isEmpty()) {
-            user.setAbout(request.about());
-        }
-        userRepository.save(user);
-        return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
-    }
 
     public UserDetailsResponse retrieveProfile(String username) throws IOException {
         User user = (User) userRepository.findByUsername(username)
@@ -95,7 +76,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Admin ops
-    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
+    @CacheEvict(value = "retrieveAllUsers, retrieveAllWatchlists", allEntries = true)
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));

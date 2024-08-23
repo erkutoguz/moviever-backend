@@ -1,32 +1,24 @@
 package com.erkutoguz.moviever_backend.controller;
 
 
-import com.erkutoguz.moviever_backend.dto.request.AuthRequest;
-import com.erkutoguz.moviever_backend.dto.request.CreateUserRequest;
-import com.erkutoguz.moviever_backend.dto.request.RefreshTokenRequest;
+import com.erkutoguz.moviever_backend.dto.request.*;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthenticationController {
 
-    Logger log = LoggerFactory.getLogger(getClass());
-
     private final AuthenticationService authenticationService;
-
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
     }
@@ -37,12 +29,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public AuthResponse loginUser(@RequestBody AuthRequest request, HttpServletRequest request1) throws IOException {
-        String clientIpAddress = request1.getHeader("X-Forwarded-For");
+    public AuthResponse loginUser(@RequestBody AuthRequest request, HttpServletRequest requestIp) throws IOException {
+        String clientIpAddress = requestIp.getHeader("X-Forwarded-For");
         if (clientIpAddress != null && clientIpAddress.contains(",")) {
             clientIpAddress = clientIpAddress.split(",")[0].trim();
         } else if (clientIpAddress == null) {
-            clientIpAddress = request1.getRemoteAddr();
+            clientIpAddress = requestIp.getRemoteAddr();
         }
         //TODO burada static ip kullanma prod'a geçince
         String ipAddr = "5.176.36.119";
@@ -63,6 +55,20 @@ public class AuthenticationController {
         authenticationService.logoutUser();
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/reset-password-email")
+    public ResponseEntity<Void> sendResetPasswordEmail(@RequestBody SendResetPasswordEmailRequest request)
+            throws MessagingException, UnsupportedEncodingException {
+        authenticationService.sendResetPasswordEmail(request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetUserPassword(@RequestBody ResetPasswordRequest request) {
+        authenticationService.resetUserPassword(request);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     @PostMapping("/refresh-token")
     public AuthResponse refreshToken(@RequestBody RefreshTokenRequest request) {

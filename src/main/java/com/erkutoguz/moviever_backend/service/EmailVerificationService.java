@@ -22,6 +22,30 @@ public class EmailVerificationService {
         this.mailSender = mailSender;
     }
 
+    public void sendResetPasswordEmail(String email, String resetPassToken)
+            throws MessagingException, UnsupportedEncodingException{
+        String subject = "Reset Password";
+        String senderName = "Moviever";
+        String content = "Please click the link below to reset your password:<br>"
+                + "<h3><a href=\"[[URL]]\" target=\"_self\">RESET</a></h3>"
+                + "Thank you,<br>"
+                + "Moviever.<br>Erkut Oğuz.";
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setFrom(mailFrom, senderName);
+        helper.setTo(email);
+        helper.setSubject(subject);
+
+        String verifyURL = "http://localhost:5173" + "/reset-password?reset-password-token=" + resetPassToken;
+        content = content.replace("[[URL]]", verifyURL);
+
+        helper.setText(content, true);
+
+        mailSender.send(message);
+    }
+
     public void sendVerificationMail(String mailTo,
                                      String firstname,
                                      String otp) throws MessagingException, UnsupportedEncodingException {
@@ -54,5 +78,6 @@ public class EmailVerificationService {
         UriComponentsBuilder builder = ServletUriComponentsBuilder.fromCurrentContextPath();
         return builder.build().toUriString();
     }
+
 
 }

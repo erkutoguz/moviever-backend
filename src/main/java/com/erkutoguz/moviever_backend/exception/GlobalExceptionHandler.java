@@ -1,5 +1,6 @@
 package com.erkutoguz.moviever_backend.exception;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import org.hibernate.NonUniqueResultException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,5 +55,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponse> handleInvalidTokenException(InvalidTokenException ex) {
         ExceptionResponse exception = new ExceptionResponse(ex.getMessage(), HttpStatus.UNAUTHORIZED.value());
         return new ResponseEntity<>(exception, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ExceptionResponse> handleExpiredTokenException(ExpiredJwtException ex) {
+        ExceptionResponse exception = new ExceptionResponse("Token invalid or expired", HttpStatus.FORBIDDEN.value());
+        return new ResponseEntity<>(exception, HttpStatus.FORBIDDEN);
     }
 }
