@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface WatchlistRepository extends JpaRepository<Watchlist, Long> {
-    Optional<List<Watchlist>> findByUserId(Long userId);
+   Page<Watchlist> findByUserId(Long userId, Pageable pageable);
 
     Page<Watchlist> findAllByOrderByIdAsc(Pageable pageable);
 }

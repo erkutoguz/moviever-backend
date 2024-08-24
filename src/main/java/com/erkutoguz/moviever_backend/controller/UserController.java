@@ -4,6 +4,7 @@ import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
+import com.erkutoguz.moviever_backend.dto.response.UserProfileResponse;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
@@ -48,6 +49,11 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userService.uploadProfilePicture(authentication.getName(),multipartFile);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/profile/{username}")
+    public UserProfileResponse retrieveUserProfile(@PathVariable String username) {
+        return userService.retrieveAnotherUserProfile(username);
     }
 
     @DeleteMapping("/profile/avatar")

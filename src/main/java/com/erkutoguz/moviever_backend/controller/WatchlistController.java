@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/watchlist")
@@ -27,8 +28,10 @@ public class WatchlistController {
     }
 
     @GetMapping
-    public List<WatchlistResponse> retrieveUserWatchlists(Principal principal) {
-        return watchlistService.retrieveUserWatchlists(principal);
+    public Map<String, Object> retrieveUserWatchlists(Principal principal,
+                                                      @RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "12") int size) {
+        return watchlistService.retrieveUserWatchlists(principal, page, size);
     }
 
     @GetMapping("/{watchlistId}/movies")
@@ -40,8 +43,9 @@ public class WatchlistController {
 
 
     @GetMapping("/preview")
-    public List<WatchlistResponsePreview> retrieveWatchlistPreview() {
-        return watchlistService.retrieveWatchlistsPreview(SecurityContextHolder.getContext().getAuthentication().getName());
+    public Map<String, Object> retrieveWatchlistPreview(@RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "12") int size) {
+        return watchlistService.retrieveWatchlistsPreview(SecurityContextHolder.getContext().getAuthentication().getName(), page, size);
     }
 
     @PatchMapping("/{watchlistId}")

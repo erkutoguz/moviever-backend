@@ -37,8 +37,8 @@ public interface SortMovieDocumentById {
             return list;
         }
         int middle = list.size() / 2;
-        List<MovieDocument> left = list.subList(0,middle);
-        List<MovieDocument> right = list.subList(middle, list.size());
+        List<MovieDocument> left = new ArrayList<>(list.subList(0,middle));
+        List<MovieDocument> right = new ArrayList<>(list.subList(middle, list.size()));
 
         return merge(sort(left), sort(right));
     }

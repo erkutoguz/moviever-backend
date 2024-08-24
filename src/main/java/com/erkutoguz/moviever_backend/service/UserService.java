@@ -3,8 +3,11 @@ package com.erkutoguz.moviever_backend.service;
 import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
+import com.erkutoguz.moviever_backend.dto.response.UserProfileResponse;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
+import com.erkutoguz.moviever_backend.model.Category;
+import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
@@ -22,9 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -108,5 +109,58 @@ public class UserService implements UserDetailsService {
         user.setEnabled(request.newStatus());
         esProducer.updateUserDocumentStatus(new UpdateUserDocumentStatusRequest(request.userId(), request.newStatus()));
         userRepository.save(user);
+    }
+
+    public UserProfileResponse retrieveAnotherUserProfile(String username) {
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Map<String, Integer> likedMoviesCategoriesCountMap = new HashMap<>();
+
+        for(Movie m : user.getLikedMovies()) {
+            for(Category c : m.getCategories()) {
+                String categoryName = c.getCategoryName().name();
+                likedMoviesCategoriesCountMap.merge(categoryName, 1, Integer::sum);
+            }
+        }
+
+        String firstCategoryName = null;
+        String secondCategoryName = null;
+        String thirdCategoryName = null;
+        int firstCategoryCount = Integer.MIN_VALUE;
+        int secondCategoryCount = Integer.MIN_VALUE;
+        int thirdCategoryCount = Integer.MIN_VALUE;
+
+        for (String k : likedMoviesCategoriesCountMap.keySet()) {
+            if(likedMoviesCategoriesCountMap.get(k) > firstCategoryCount) {
+                thirdCategoryCount = secondCategoryCount;
+                thirdCategoryName = secondCategoryName;
+                secondCategoryCount = firstCategoryCount;
+                secondCategoryName = firstCategoryName;
+                firstCategoryName = k;
+                firstCategoryCount = likedMoviesCategoriesCountMap.get(k);
+            } else if(likedMoviesCategoriesCountMap.get(k) > secondCategoryCount) {
+                thirdCategoryCount = secondCategoryCount;
+                thirdCategoryName = secondCategoryName;
+                secondCategoryName = k;
+                secondCategoryCount = likedMoviesCategoriesCountMap.get(k);
+            } else if(likedMoviesCategoriesCountMap.get(k) > thirdCategoryCount) {
+                thirdCategoryName = k;
+                thirdCategoryCount = likedMoviesCategoriesCountMap.get(k);
+            }
+        }
+        Set<String> favouriteCategories;
+        if(firstCategoryName == null) {
+            favouriteCategories = Set.of();
+        } else if(secondCategoryName == null) {
+            favouriteCategories = Set.of(firstCategoryName);
+        } else if(thirdCategoryName == null){
+            favouriteCategories = Set.of(firstCategoryName, secondCategoryName);
+        } else {
+            favouriteCategories = Set.of(firstCategoryName, secondCategoryName, thirdCategoryName);
+        }
+        return new UserProfileResponse(user.getUsername(), user.getFirstname(),user.getLastname(),
+                user.getAbout(), user.getPictureUrl(), favouriteCategories);
+
     }
 }

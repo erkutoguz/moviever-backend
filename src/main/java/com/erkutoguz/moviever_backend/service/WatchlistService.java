@@ -45,10 +45,18 @@ public class WatchlistService {
         this.userRepository = userRepository;
     }
 
-    public List<WatchlistResponse> retrieveUserWatchlists(Principal principal) {
-        User user = (User) userRepository.findByUsername(principal.getName()).orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        List<Watchlist> watchlists = watchlistRepository.findByUserId(user.getId()).orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
-        return WatchlistMapper.map(watchlists);
+    public Map<String, Object> retrieveUserWatchlists(Principal principal, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        User user = (User) userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Map<String, Object> map = new HashMap<>();
+
+        Page<Watchlist> watchlistsPage = watchlistRepository.findByUserId(user.getId(), pageable);
+        map.put("watchlists", WatchlistMapper.map(watchlistsPage.getContent()));
+        map.put("totalItems", watchlistsPage.getTotalElements());
+        map.put("totalPages", watchlistsPage.getTotalPages());
+        return map;
     }
 
     //TODO buraya bi bak
@@ -68,18 +76,25 @@ public class WatchlistService {
         watchlistRepository.save(watchlist);
     }
 
-    public List<WatchlistResponsePreview> retrieveWatchlistsPreview(String username) {
+    public Map<String, Object> retrieveWatchlistsPreview(String username, int page ,int size) {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        Pageable pageable = PageRequest.of(page, size);
 
-        List<Watchlist> watchlists = watchlistRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
+        Page<Watchlist> watchlistsPage = watchlistRepository.findByUserId(user.getId(), pageable);
+
+        Map<String, Object> map = new HashMap<>();
 
         List<WatchlistResponsePreview> response = new ArrayList<>();
-        for (int i = 0; i < watchlists.size(); i++) {
-            response.add(WatchlistPreviewMapper.map(watchlists.get(i)));
+        for (int i = 0; i < watchlistsPage.getContent().size(); i++) {
+            response.add(WatchlistPreviewMapper.map(watchlistsPage.getContent().get(i)));
         }
-        return response;
+
+        map.put("watchlistPreviews", response);
+        map.put("totalItems", watchlistsPage.getTotalElements());
+        map.put("totalPages", watchlistsPage.getTotalPages());
+
+        return map;
     }
 
     public WatchlistResponseWithMovies retrieveWatchlist(Long watchlistId, int page, int size) {
