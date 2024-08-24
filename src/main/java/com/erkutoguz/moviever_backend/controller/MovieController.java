@@ -5,6 +5,7 @@ import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.MovieService;
+import com.erkutoguz.moviever_backend.service.RecommendedMovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,9 +25,13 @@ public class MovieController {
 
     private final MovieService movieService;
     private final ReviewService reviewService;
-    public MovieController(MovieService movieService, ReviewService reviewService) {
+    private final RecommendedMovieService recommendedMovieService;
+    public MovieController(MovieService movieService,
+                           ReviewService reviewService,
+                           RecommendedMovieService recommendedMovieService) {
         this.movieService = movieService;
         this.reviewService = reviewService;
+        this.recommendedMovieService = recommendedMovieService;
     }
 
     @GetMapping("/sync-with-es")
@@ -65,8 +70,8 @@ public class MovieController {
     }
 
     @GetMapping("/recommended")
-    public Set<MovieResponse> retrieveRecommendedMovies(Principal principal) {
-        return movieService.retrieveRecommendedMovies(principal);
+    public  List<MovieResponse> retrieveRecommendedMovies() {
+        return recommendedMovieService.getRecommendedMovies();
     }
 
     @GetMapping

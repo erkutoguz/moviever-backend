@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
@@ -25,5 +26,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
         @Query("SELECT m FROM Movie m JOIN m.categories c WHERE c.categoryName = :categoryName")
         Page<Movie> findByCategoryNameByOrderByIdDesc(@Param("categoryName") CategoryType categoryName, Pageable pageable);
 
+
+        boolean existsById(Long movieId);
+
         Optional<Movie> findByTitleIgnoreCase(String title);
+
+        @Query("SELECT m FROM Movie m WHERE m.id IN :ids")
+        Page<Movie> findAllByIdIn(List<Long> ids, Pageable pageable);
 }

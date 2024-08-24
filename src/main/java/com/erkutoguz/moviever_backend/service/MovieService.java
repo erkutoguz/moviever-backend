@@ -36,13 +36,14 @@ public class MovieService {
     private final ESProducer esProducer;
     private final MovieDocumentRepository movieDocumentRepository;
     private final DropboxService dropboxService;
+    private final ReviewRepository reviewRepository;
     public MovieService(MovieRepository movieRepository,
                         UserRepository userRepository,
                         CategoryRepository categoryRepository,
                         WatchlistRepository watchlistRepository,
                         ESProducer esProducer,
                         MovieDocumentRepository movieDocumentRepository,
-                        DropboxService dropboxService) {
+                        DropboxService dropboxService, ReviewRepository reviewRepository) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
@@ -50,6 +51,7 @@ public class MovieService {
         this.esProducer = esProducer;
         this.movieDocumentRepository = movieDocumentRepository;
         this.dropboxService = dropboxService;
+        this.reviewRepository = reviewRepository;
     }
 
     public MovieResponse retrieveMovie(Long movieId, String username) {
@@ -59,12 +61,12 @@ public class MovieService {
     }
 
     public Map<String, Object> retrieveMovieReviews(Long movieId, int page, int size) {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        if(!movieRepository.existsById(movieId)) {
+            throw new ResourceNotFoundException("Movie not found");
+        }
         Pageable pageable = PageRequest.of(page, size);
-        Page<Review> reviewPage = new PageImpl<>(movie.getReviews());
+        Page<Review> reviewPage = reviewRepository.findByMovieId(movieId, pageable);
         Map<String, Object> map = new HashMap<>();
-
         map.put("reviews", SortReviewResponseByLikeCount.sortByLike(reviewMapper(reviewPage.getContent())));
         map.put("totalItems", reviewPage.getTotalElements());
         map.put("totalPages", reviewPage.getTotalPages());
