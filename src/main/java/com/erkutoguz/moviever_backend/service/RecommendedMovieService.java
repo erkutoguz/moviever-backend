@@ -1,6 +1,5 @@
 package com.erkutoguz.moviever_backend.service;
 
-
 import com.erkutoguz.moviever_backend.dto.request.RecommendedMovieRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.RecommendedMovieResponse;
@@ -10,8 +9,6 @@ import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +22,6 @@ import java.util.stream.Collectors;
 @Service
 public class RecommendedMovieService {
 
-    private static final Logger log = LoggerFactory.getLogger(RecommendedMovieService.class);
     private final RestClient restClient;
     private final UserRepository userRepository;
     private final MovieRepository movieRepository;
@@ -60,14 +56,10 @@ public class RecommendedMovieService {
                     calculateMovieScore(movie, userLikedMoviesResponse, userWatchlistMoviesResponse));
             recommendedMovies.add(movieScore);
         }
-
-        log.info("Unsorted List {}", recommendedMovies);
-
         recommendedMovies.sort(Comparator.comparingDouble(RecommendedMovieResponse::score).reversed());;
 
         List<Long> recommendedMovieResponses = recommendedMovies.stream()
                 .map(RecommendedMovieResponse::movieId).toList();
-        log.info("Sorted list {}", recommendedMovies);
 
         List<MovieResponse> movieResponses = new ArrayList<>();
         for(Long id : recommendedMovieResponses) {
@@ -89,48 +81,36 @@ public class RecommendedMovieService {
         double score = 0;
 
         Map<Long, RecommendedMovieRequest> userLikedMoviesMap = new HashMap<>();
-        for(RecommendedMovieRequest m : userLikedMovies) {
-            userLikedMoviesMap.put(m.id(), m);
-        }
-
-        Map<Long, RecommendedMovieRequest> userWatchlistMoviesMap = new HashMap<>();
-        for(RecommendedMovieRequest m : userWatchlistMovies) {
-            userWatchlistMoviesMap.put(m.id(), m);
-        }
-
-        if(userWatchlistMoviesMap.containsKey(movie.id())) {
-            score++;
-        }
-        if(userLikedMoviesMap.containsKey(movie.id())) {
-            score++;
-        }
-
-//        for(RecommendedMovieRequest watchlistMovie : userWatchlistMovies) {
-//            if(movie.id() == watchlistMovie.id()) {
-//                score++;
-//                break;
-//            }
-//        }
-
-//        for(RecommendedMovieRequest likedMovie : userLikedMovies) {
-//            if(likedMovie.id() == movie.id()){
-//                score++;
-//                break;
-//            }
-//        }
-
-        for(RecommendedMovieRequest likedMovie : userLikedMovies) {
-            for(String category : likedMovie.categories()) {
-                if(movie.categories().contains(category)) {
-                    score += weights.get("sameCategory");
+        if(userLikedMovies != null) {
+            for(RecommendedMovieRequest m : userLikedMovies) {
+                userLikedMoviesMap.put(m.id(), m);
+            }
+            if(userLikedMoviesMap.containsKey(movie.id())) {
+                score++;
+            }
+            for(RecommendedMovieRequest likedMovie : userLikedMovies) {
+                for(String category : likedMovie.categories()) {
+                    if(movie.categories().contains(category)) {
+                        score += weights.get("sameCategory");
+                    }
                 }
             }
         }
 
-        for(RecommendedMovieRequest likedMovie : userWatchlistMovies) {
-            for(String category : likedMovie.categories()) {
-                if(movie.categories().contains(category)) {
-                    score += weights.get("sameCategory");
+        Map<Long, RecommendedMovieRequest> userWatchlistMoviesMap = new HashMap<>();
+        if(userWatchlistMovies != null){
+            for(RecommendedMovieRequest m : userWatchlistMovies) {
+                userWatchlistMoviesMap.put(m.id(), m);
+            }
+            if(userWatchlistMoviesMap.containsKey(movie.id())) {
+                score++;
+            }
+
+            for(RecommendedMovieRequest likedMovie : userWatchlistMovies) {
+                for(String category : likedMovie.categories()) {
+                    if(movie.categories().contains(category)) {
+                        score += weights.get("sameCategory");
+                    }
                 }
             }
         }

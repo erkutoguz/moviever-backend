@@ -2,6 +2,7 @@ package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.ReviewRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
+import com.erkutoguz.moviever_backend.exception.AccessDeniedException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
 import com.erkutoguz.moviever_backend.kafka.listener.ESListener;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -74,6 +76,7 @@ public class ReviewService {
 
 
     public void deleteReview(Long movieId, Long reviewId) {
+        if(!SecurityContextHolder.getContext().getAuthentication().isAuthenticated()) throw new AccessDeniedException("Unauthenticated user");
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         Review review = reviewRepository.findById(reviewId)

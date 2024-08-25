@@ -70,7 +70,6 @@ public class AuthenticationController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
     @PostMapping("/refresh-token")
     public AuthResponse refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
         return authenticationService.refreshToken(request.refreshToken());
