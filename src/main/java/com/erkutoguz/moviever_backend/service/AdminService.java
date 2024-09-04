@@ -21,16 +21,18 @@ public class AdminService {
     private final WatchlistService watchlistService;
     private final CategoryService categoryService;
     private final IpAddressService ipAddressService;
+    private final ElasticsearchService elasticsearchService;
     public AdminService(MovieService movieService,
                         UserService userService,
                         ReviewService reviewService,
-                        WatchlistService watchlistService, CategoryService categoryService, IpAddressService ipAddressService) {
+                        WatchlistService watchlistService, CategoryService categoryService, IpAddressService ipAddressService, ElasticsearchService elasticsearchService) {
         this.movieService = movieService;
         this.userService = userService;
         this.reviewService = reviewService;
         this.watchlistService = watchlistService;
         this.categoryService = categoryService;
         this.ipAddressService = ipAddressService;
+        this.elasticsearchService = elasticsearchService;
     }
 
     public Map<String, Object> retrieveAllUsers(int page, int size) {
@@ -79,5 +81,13 @@ public class AdminService {
 
     public List<AdminIpAddressesResponse> retrieveIpAddresses() {
         return ipAddressService.retrieveIpAddresses();
+    }
+
+    public Map<String, Object> searchUser(String q, int page, int size) {
+        return elasticsearchService.searchUsersByQuery(q, page, size);
+    }
+
+    public Map<String, Object> searchReview(String q, int page, int size) {
+        return elasticsearchService.searchReviewByQuery(q,page,size);
     }
 }

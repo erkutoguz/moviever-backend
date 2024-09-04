@@ -27,6 +27,9 @@ public class Movie {
     @Column(name = "release_year")
     private int releaseYear;
 
+    @Column(name = "description")
+    private String description;
+
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
 
@@ -100,6 +103,14 @@ public class Movie {
 
     public void setViewCount(long viewCount) {
         this.viewCount = viewCount;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getLikeCount() {

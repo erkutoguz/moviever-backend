@@ -1,30 +1,30 @@
 package com.erkutoguz.moviever_backend.model;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Setting;
-
-@Document(indexName = "reviews")
-@Setting(settingPath = "static/es-review-settings.json")
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ReviewDocument {
-
-    @Id
     private Long id;
-
     private String username;
-
+    private Long userId;
     private Long movieId;
-
-    String movieName;
-
-    String review;
-
-    String createdAt;
-
+    private String movieName;
+    private String review;
+    private String createdAt;
     private int likeCount;
+
+    public ReviewDocument() {
+    }
+
+    public ReviewDocument(Long id, String username, Long userId,
+                          Long movieId, String movieName, String review,
+                          String createdAt, int likeCount) {
+        this.id = id;
+        this.username = username;
+        this.movieId = movieId;
+        this.userId = userId;
+        this.movieName = movieName;
+        this.review = review;
+        this.createdAt = createdAt;
+        this.likeCount = likeCount;
+    }
 
     public Long getId() {
         return id;
@@ -32,6 +32,14 @@ public class ReviewDocument {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     public String getUsername() {

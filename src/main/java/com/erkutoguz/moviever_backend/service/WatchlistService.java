@@ -3,7 +3,6 @@ package com.erkutoguz.moviever_backend.service;
 import com.erkutoguz.moviever_backend.dto.request.CreateWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.RenameWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.WatchlistMovieRequest;
-import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.exception.AccessDeniedException;
@@ -18,8 +17,6 @@ import com.erkutoguz.moviever_backend.repository.WatchlistRepository;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistMapper;
 import com.erkutoguz.moviever_backend.util.WatchlistPreviewMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -30,12 +27,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class WatchlistService {
 
-    private static final Logger log = LoggerFactory.getLogger(WatchlistService.class);
     private final WatchlistRepository watchlistRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
@@ -59,10 +58,8 @@ public class WatchlistService {
         return map;
     }
 
-    //TODO buraya bi bak
     @CacheEvict(value = "retrieveAllWatchlists", allEntries = true)
     public void renameWatchlist(Long watchlistId, RenameWatchlistRequest request) {
-        //TODO Burada movies ve watchlists alanlarını da update edip save etmek gerekebilir
         Watchlist watchlist = watchlistRepository.findById(watchlistId)
                 .orElseThrow(() -> new ResourceNotFoundException("Watchlist not found"));
 

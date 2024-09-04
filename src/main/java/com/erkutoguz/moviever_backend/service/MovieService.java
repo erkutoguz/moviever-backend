@@ -16,16 +16,20 @@ import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
 import org.springframework.cache.annotation.CacheEvict;
-
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.security.Principal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class MovieService {
@@ -34,7 +38,6 @@ public class MovieService {
     private final CategoryRepository categoryRepository;
     private final WatchlistRepository watchlistRepository;
     private final ESProducer esProducer;
-    private final MovieDocumentRepository movieDocumentRepository;
     private final DropboxService dropboxService;
     private final ReviewRepository reviewRepository;
     public MovieService(MovieRepository movieRepository,
@@ -42,14 +45,12 @@ public class MovieService {
                         CategoryRepository categoryRepository,
                         WatchlistRepository watchlistRepository,
                         ESProducer esProducer,
-                        MovieDocumentRepository movieDocumentRepository,
                         DropboxService dropboxService, ReviewRepository reviewRepository) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.watchlistRepository = watchlistRepository;
         this.esProducer = esProducer;
-        this.movieDocumentRepository = movieDocumentRepository;
         this.dropboxService = dropboxService;
         this.reviewRepository = reviewRepository;
     }
@@ -123,10 +124,6 @@ public class MovieService {
         return map;
     }
 
-    public Set<MovieResponse> retrieveRecommendedMovies(Principal principal) {
-        return null;
-//        return new MovieResponse();
-    }
 
     @Cacheable(cacheNames = "allMovies", key = "#root.methodName + '-' + #categoryName + '-' + #pageNumber + '-' + #pageSize",
             unless = "#result==null")
@@ -182,8 +179,8 @@ public class MovieService {
             posterUrl = dropboxService.uploadImage("moviePoster", request.title(), request.poster());
         }
         movie.setPictureUrl(posterUrl);
-        movieRepository.save(movie);
-        esProducer.sendMovieDocument(MovieDocumentMapper.map(movie));
+        Movie savedMovie = movieRepository.save(movie);
+        esProducer.sendMovieDocument(MovieDocumentMapper.map(savedMovie));
     }
 
     @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
@@ -193,7 +190,6 @@ public class MovieService {
         });
         List<Movie> movies = request.stream().map(this::builtMovie).toList();
         List<Movie> savedMovies = movieRepository.saveAll(movies);
-        esProducer.sendMovieDocumentList(MovieDocumentMapper.map(savedMovies));
     }
 
     private Movie builtMovie(CreateMovieRequest request) {
@@ -201,6 +197,7 @@ public class MovieService {
         request.categories().forEach(categoryType -> {
             movie.addCategory(categoryRepository.findByCategoryName(categoryType));
         });
+        movie.setDescription(request.description());
         movie.setDirector(request.director());
         movie.setTitle(request.title());
         movie.setRating(request.rating());
@@ -231,16 +228,10 @@ public class MovieService {
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
         movie.setPictureUrl(request.pictureUrl());
         movie.setRating(request.rating());
+        movie.setDescription(request.description());
         movie.setTitle(request.title());
         movie.setDirector(request.director());
         movie.setReleaseYear(request.releaseYear());
         movieRepository.save(movie);
-    }
-
-    public String syncWithEs() {
-        List<Movie> movies = movieRepository.findAll();
-        movieDocumentRepository.deleteAll();
-        esProducer.sendMovieDocumentList(MovieDocumentMapper.map(movies));
-        return "successfully synchronized";
     }
 }

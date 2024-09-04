@@ -4,17 +4,14 @@ import com.erkutoguz.moviever_backend.dto.request.ReviewRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.exception.AccessDeniedException;
 import com.erkutoguz.moviever_backend.exception.ResourceNotFoundException;
-import com.erkutoguz.moviever_backend.kafka.listener.ESListener;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.Review;
 import com.erkutoguz.moviever_backend.model.User;
 import com.erkutoguz.moviever_backend.repository.MovieRepository;
-import com.erkutoguz.moviever_backend.repository.ReviewDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.ReviewRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.LikeMapper;
-import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.ReviewDocumentMapper;
 import com.erkutoguz.moviever_backend.util.ReviewMapper;
 import org.springframework.data.domain.Page;
@@ -25,7 +22,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -33,16 +29,14 @@ import java.util.function.Predicate;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final ReviewDocumentRepository reviewDocumentRepository;
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
     private final ESProducer esProducer;
-    public ReviewService(ReviewRepository reviewRepository, ReviewDocumentRepository reviewDocumentRepository,
+    public ReviewService(ReviewRepository reviewRepository,
                          MovieRepository movieRepository,
                          UserRepository userRepository,
                          ESProducer esProducer) {
         this.reviewRepository = reviewRepository;
-        this.reviewDocumentRepository = reviewDocumentRepository;
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.esProducer = esProducer;
@@ -112,13 +106,6 @@ public class ReviewService {
         user.unlikeReview(review);
         userRepository.save(user);
         reviewRepository.save(review);
-    }
-
-    public String syncWithEs() {
-        List<Review> reviews = reviewRepository.findAll();
-        reviewDocumentRepository.deleteAll();
-        esProducer.sendReviewDocumentList(ReviewDocumentMapper.map(reviews));
-        return "successfully synchronized";
     }
 
 }

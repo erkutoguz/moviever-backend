@@ -18,6 +18,9 @@ public record CreateMovieRequest(
         @NotNull(message = "Release year cannot be empty")
         int releaseYear,
 
+        @NotBlank(message = "Description can not be empty")
+        String description,
+
         MultipartFile poster,
 
         @NotBlank(message = "Trailer can not be empty")

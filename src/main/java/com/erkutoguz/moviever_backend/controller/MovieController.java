@@ -2,8 +2,8 @@ package com.erkutoguz.moviever_backend.controller;
 
 import com.erkutoguz.moviever_backend.dto.request.ReviewRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
-import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
+import com.erkutoguz.moviever_backend.service.ElasticsearchService;
 import com.erkutoguz.moviever_backend.service.MovieService;
 import com.erkutoguz.moviever_backend.service.RecommendedMovieService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
@@ -14,10 +14,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/movies")
@@ -26,17 +24,14 @@ public class MovieController {
     private final MovieService movieService;
     private final ReviewService reviewService;
     private final RecommendedMovieService recommendedMovieService;
+    private final ElasticsearchService elasticsearchService;
     public MovieController(MovieService movieService,
                            ReviewService reviewService,
-                           RecommendedMovieService recommendedMovieService) {
+                           RecommendedMovieService recommendedMovieService, ElasticsearchService elasticsearchService) {
         this.movieService = movieService;
         this.reviewService = reviewService;
         this.recommendedMovieService = recommendedMovieService;
-    }
-
-    @GetMapping("/sync-with-es")
-    public String syncWithEs() {
-        return movieService.syncWithEs();
+        this.elasticsearchService = elasticsearchService;
     }
 
     @GetMapping("/{movieId}")
@@ -49,6 +44,17 @@ public class MovieController {
         }
 
         return (T) movieService.retrieveMovieWithDetails(movieId, username);
+    }
+
+    @GetMapping("/search")
+    public Map<String, Object> searchMovies(@RequestParam(defaultValue = "ALL",name = "category") CategoryType categoryType,
+                                            @RequestParam String q,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "12") int size) {
+        if(categoryType.toString().equals("ALL")) {
+            return elasticsearchService.searchMoviesByQuery(q, page, size);
+        }
+        return elasticsearchService.searchMoviesByQueryAndCategory(q, categoryType.toString(), page,size);
     }
 
     @GetMapping("/most-liked-movies")
@@ -108,6 +114,7 @@ public class MovieController {
         movieService.likeMovie(movieId, authentication);
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
+
     @DeleteMapping("/{movieId}/like")
     public ResponseEntity<Void> unlikeMovie(@PathVariable Long movieId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

@@ -32,11 +32,6 @@ public class UserController {
         this.authenticationService = authenticationService;
     }
 
-    @GetMapping("/sync-with-es")
-    public String syncWithEs() {
-        return userService.syncWithEs();
-    }
-
     @PutMapping("/me")
     public ResponseEntity<String> updateUser(@RequestBody UpdateUserRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

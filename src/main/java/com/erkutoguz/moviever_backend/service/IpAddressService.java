@@ -20,12 +20,17 @@ public class IpAddressService {
 
     private final RestClient restClient;
     private final IpAddressRepository ipAddressRepository;
-    public IpAddressService(RestClient restClient, IpAddressRepository ipAddressRepository) {
+    public IpAddressService(RestClient restClient,
+                            IpAddressRepository ipAddressRepository) {
         this.restClient = restClient;
         this.ipAddressRepository = ipAddressRepository;
     }
 
     public IpAddressResponse extractIpAddressInformation(String ipAddress) {
+        if(ipAddress.startsWith("0:0:0")) {
+            return new IpAddressResponse("0.0.0.0","Antalya","Mediterrian", "Turkey", "36.884804,30.704044", "Turkey Internet Provider", "07010", "UTC");
+        }
+
         String url = UriComponentsBuilder.fromHttpUrl("https://ipinfo.io")
                 .pathSegment(ipAddress)
                 .queryParam("token", ipInfoToken)

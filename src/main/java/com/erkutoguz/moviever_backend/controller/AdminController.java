@@ -14,8 +14,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
 import jakarta.validation.Validator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +28,6 @@ import java.util.Set;
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
-    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
     private final Validator validator;
     private final AdminService adminService;
     public AdminController(Validator validator, AdminService adminService) {
@@ -48,6 +45,13 @@ public class AdminController {
     public Map<String, Object> retrieveAllReviews(@RequestParam(defaultValue = "0") int page,
                                                 @RequestParam(defaultValue = "1") int size) {
         return adminService.retrieveAllReviews(page, size);
+    }
+
+    @GetMapping("/reviews/search")
+    public Map<String, Object> searchReview(@RequestParam String q,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "12") int size) {
+        return adminService.searchReview(q,page,size);
     }
 
     @GetMapping("/movies")
@@ -73,11 +77,12 @@ public class AdminController {
                                              @RequestParam("trailerUrl") String trailerUrl,
                                              @RequestParam("rating") double rating,
                                              @RequestParam("categories") String categoriesJson,
-                                             @RequestPart("poster") MultipartFile poster)
+                                             @RequestPart("poster") MultipartFile poster,
+                                             @RequestParam("description") String description)
             throws IOException, DbxException {
         Set<CategoryType> categories = new ObjectMapper()
                 .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
-        CreateMovieRequest request = new CreateMovieRequest(title,director,releaseYear,poster,trailerUrl,rating,categories);
+        CreateMovieRequest request = new CreateMovieRequest(title,director,releaseYear,description, poster,trailerUrl,rating,categories);
         Set<ConstraintViolation<CreateMovieRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
             StringBuilder violationMessages = new StringBuilder();
@@ -115,6 +120,13 @@ public class AdminController {
     @GetMapping("/users/ip-addresses")
     public List<AdminIpAddressesResponse> retrieveIpAddresses() {
         return adminService.retrieveIpAddresses();
+    }
+
+    @GetMapping("/users/search")
+    public Map<String, Object> searchUsersByQuery(@RequestParam String q,
+                                                  @RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "12") int size) {
+        return adminService.searchUser(q, page,size);
     }
 
     @PatchMapping("/users/{userId}")

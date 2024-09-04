@@ -1,99 +1,84 @@
 package com.erkutoguz.moviever_backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.Field;
-import org.springframework.data.elasticsearch.annotations.FieldType;
-import org.springframework.data.elasticsearch.annotations.Setting;
+import java.util.List;
 
-import java.util.Set;
-
-@Document(indexName = "users")
-@Setting(settingPath = "static/es-user-settings.json")
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDocument {
 
-    @Id
-    private Long id;
-
-    @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer")
-    private String username;
-
-    @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer")
     private String email;
-
-    @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer")
     private String firstName;
-
-    @Field(type = FieldType.Text, analyzer = "edge_ngram_analyzer")
     private String lastName;
-
+    private String username;
+    private List<String> roles;
+    private Long id;
     private boolean enabled;
-    private String pictureUrl;
-    private Set<Role> roles;
 
-    public Long getId() {
-        return id;
+    public UserDocument() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
+    public UserDocument(String email, String firstName, String lastName,
+                        String username, List<String> roles, Long id, boolean enabled) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.username = username;
-    }
-
-    public String getPictureUrl() {
-        return pictureUrl;
-    }
-
-    public void setPictureUrl(String pictureUrl) {
-        this.pictureUrl = pictureUrl;
+        this.roles = roles;
+        this.id = id;
+        this.enabled = enabled;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getFirstName() {
         return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
     }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public String getUsername() {
+        return username;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public boolean isEnabled() {
         return enabled;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
     }
 }

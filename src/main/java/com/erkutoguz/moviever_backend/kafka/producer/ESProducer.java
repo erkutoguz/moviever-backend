@@ -7,8 +7,6 @@ import com.erkutoguz.moviever_backend.model.UserDocument;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class ESProducer {
 
@@ -17,21 +15,16 @@ public class ESProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendMovieDocument(MovieDocument request) {
-        kafkaTemplate.send("add-movie-document", request);
-    }
-    public void sendMovieDocumentList(List<MovieDocument> request) {
-        kafkaTemplate.send("add-movie-document-list", request);
+    public void sendMovieDocument(MovieDocument movieDocument) {
+        kafkaTemplate.send("add-movie-document",movieDocument);
     }
     public void sendDeleteMovieMessage(long movieId) {
         kafkaTemplate.send("delete-movie-document", movieId);
     }
 
-    public void sendUserDocument(UserDocument request) {
-        kafkaTemplate.send("add-user-document", request);
-    }
-    public void sendUserDocumentList(List<UserDocument> request) {
-        kafkaTemplate.send("add-user-document-list", request);
+
+    public void sendUserDocument(UserDocument userDocument) {
+        kafkaTemplate.send("add-user-document", userDocument);
     }
     public void updateUserDocumentStatus(UpdateUserDocumentStatusRequest request) {
         kafkaTemplate.send("update-user-document-status", request);
@@ -40,11 +33,9 @@ public class ESProducer {
         kafkaTemplate.send("delete-user-document", userId);
     }
 
-    public void sendReviewDocument(ReviewDocument request) {
-        kafkaTemplate.send("add-review-document", request);
-    }
-    public void sendReviewDocumentList(List<ReviewDocument> request) {
-        kafkaTemplate.send("add-review-document-list", request);
+
+    public void sendReviewDocument(ReviewDocument reviewDocument) {
+        kafkaTemplate.send("add-review-document", reviewDocument);
     }
     public void sendDeleteReviewMessage(long reviewId) {
         kafkaTemplate.send("delete-review-document", reviewId);

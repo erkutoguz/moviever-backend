@@ -1,12 +1,9 @@
 package com.erkutoguz.moviever_backend.aspect;
 
-import com.erkutoguz.moviever_backend.dto.log.Log;
 import com.erkutoguz.moviever_backend.dto.log.UserLog;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;

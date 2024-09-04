@@ -3,8 +3,6 @@ package com.erkutoguz.moviever_backend.controller;
 import com.erkutoguz.moviever_backend.dto.request.CreateWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.RenameWatchlistRequest;
 import com.erkutoguz.moviever_backend.dto.request.WatchlistMovieRequest;
-import com.erkutoguz.moviever_backend.dto.response.WatchlistResponse;
-import com.erkutoguz.moviever_backend.dto.response.WatchlistResponsePreview;
 import com.erkutoguz.moviever_backend.dto.response.WatchlistResponseWithMovies;
 import com.erkutoguz.moviever_backend.service.WatchlistService;
 import jakarta.validation.Valid;
@@ -14,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 import java.util.Map;
 
 @RestController

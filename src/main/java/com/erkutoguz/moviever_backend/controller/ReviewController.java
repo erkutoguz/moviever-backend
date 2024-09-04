@@ -31,9 +31,4 @@ public class ReviewController {
         return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
-    @GetMapping("/sync-with-es")
-    public String syncWithEs() {
-        return reviewService.syncWithEs();
-    }
-
 }

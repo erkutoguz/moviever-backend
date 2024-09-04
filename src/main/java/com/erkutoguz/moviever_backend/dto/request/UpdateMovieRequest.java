@@ -17,6 +17,9 @@ public record UpdateMovieRequest(
         @NotBlank(message = "Poster can not be empty")
         String pictureUrl,
 
+        @NotBlank(message = "Description can not be empty")
+        String description,
+
         @NotNull(message = "Rating cannot be empty")
         @DecimalMin(value = "0.0",  message = "Rating must be greater than 0")
         @DecimalMax(value = "10.0", message = "Rating must be less than or equal to 10")

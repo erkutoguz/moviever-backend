@@ -1,8 +1,8 @@
 package com.erkutoguz.moviever_backend.controller;
 
-
 import com.erkutoguz.moviever_backend.dto.request.*;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
+import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,9 +37,13 @@ public class AuthenticationController {
         } else if (clientIpAddress == null) {
             clientIpAddress = requestIp.getRemoteAddr();
         }
-        //TODO burada static ip kullanma prod'a geçince
-        String ipAddr = "5.176.36.119";
-        return authenticationService.loginUser(request, ipAddr);
+
+        return authenticationService.loginUser(request, clientIpAddress);
+    }
+
+    @PostMapping("/userdoc")
+    public String userDoc(@RequestBody UserDocument userDocument){
+        return "created";
     }
 
     @GetMapping("/verify")

@@ -15,4 +15,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
    Optional<UserDetails> findByUsername(String username);
    Optional<User> findByOtp(String otp);
    Page<User> findAllByOrderByIdAsc(Pageable pageable);
+   boolean existsByUsername(String username);
 }

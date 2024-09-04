@@ -2,6 +2,7 @@ package com.erkutoguz.moviever_backend.service;
 
 import com.erkutoguz.moviever_backend.dto.request.*;
 import com.erkutoguz.moviever_backend.dto.response.AuthResponse;
+import com.erkutoguz.moviever_backend.dto.response.IpAddressResponse;
 import com.erkutoguz.moviever_backend.exception.*;
 import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.IpAddress;
@@ -12,8 +13,6 @@ import com.erkutoguz.moviever_backend.repository.UserRepository;
 import com.erkutoguz.moviever_backend.util.IpAddressMapper;
 import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import jakarta.mail.MessagingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +33,6 @@ import java.util.Set;
 @Service
 public class AuthenticationService {
 
-
-    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
     private final UserRepository userRepository;
     private final IpAddressRepository ipAddressRepository;
     private final IpAddressService ipAddressService;
@@ -64,7 +61,7 @@ public class AuthenticationService {
     public AuthResponse loginUser(AuthRequest request, String clientIpAddress) throws IOException {
         User user = (User) userRepository.findByUsername(request.username())
                 .orElseThrow(() ->
-                        new UsernameNotFoundException("User with username: " + request.username() + " not found"));
+                        new ResourceNotFoundException("User not found"));
         try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.username(), request.password()));
@@ -79,7 +76,11 @@ public class AuthenticationService {
         try{
             IpAddress ipAddress = ipAddressRepository.findByIp(clientIpAddress)
                     .orElseGet(() -> {
-                        IpAddress newIp = IpAddressMapper.map(ipAddressService.extractIpAddressInformation(clientIpAddress));
+                        IpAddressResponse ipRes = ipAddressService.extractIpAddressInformation(clientIpAddress);
+                        if(ipRes == null) {
+                            return ipAddressRepository.save(new IpAddress());
+                        }
+                        IpAddress newIp = IpAddressMapper.map(ipRes);
                         return ipAddressRepository.save(newIp);
                     });
 
@@ -94,7 +95,6 @@ public class AuthenticationService {
             }
 
         } catch (Exception exception) {
-            log.info(exception.getMessage());
             throw new InternalServerException("Something went wrong");
         }
 
@@ -159,7 +159,6 @@ public class AuthenticationService {
 
     @CacheEvict(value = "retrieveAllUsers", allEntries = true)
     public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
-        // TODO exceptions to everywhere
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if(request.firstname() != null && !request.firstname().isEmpty()) {

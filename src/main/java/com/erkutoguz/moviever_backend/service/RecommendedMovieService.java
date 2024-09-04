@@ -40,7 +40,9 @@ public class RecommendedMovieService {
 
         List<Movie> allMovies = movieRepository.findAll();
         List<RecommendedMovieRequest> allMoviesResponse =  map(allMovies);
-
+        if(allMoviesResponse == null) {
+            return new ArrayList<>();
+        }
         List<Movie> userLikedMovies = user.getLikedMovies();
         List<RecommendedMovieRequest> userLikedMoviesResponse = map(userLikedMovies);
 
@@ -56,6 +58,12 @@ public class RecommendedMovieService {
                     calculateMovieScore(movie, userLikedMoviesResponse, userWatchlistMoviesResponse));
             recommendedMovies.add(movieScore);
         }
+        if(recommendedMovies.size() < 12) {
+            recommendedMovies = new ArrayList<>(recommendedMovies.subList(0,recommendedMovies.size()));
+        }else {
+            recommendedMovies = new ArrayList<>(recommendedMovies.subList(0,12));
+        }
+
         recommendedMovies.sort(Comparator.comparingDouble(RecommendedMovieResponse::score).reversed());;
 
         List<Long> recommendedMovieResponses = recommendedMovies.stream()

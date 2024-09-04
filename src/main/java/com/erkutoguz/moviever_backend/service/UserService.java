@@ -9,9 +9,7 @@ import com.erkutoguz.moviever_backend.kafka.producer.ESProducer;
 import com.erkutoguz.moviever_backend.model.Category;
 import com.erkutoguz.moviever_backend.model.Movie;
 import com.erkutoguz.moviever_backend.model.User;
-import com.erkutoguz.moviever_backend.repository.UserDocumentRepository;
 import com.erkutoguz.moviever_backend.repository.UserRepository;
-import com.erkutoguz.moviever_backend.util.UserDocumentMapper;
 import com.erkutoguz.moviever_backend.util.UserMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -30,26 +28,14 @@ import java.util.*;
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final UserDocumentRepository userDocumentRepository;
     private final ESProducer esProducer;
     private final DropboxService dropboxService;
     public UserService(UserRepository userRepository,
-                       UserDocumentRepository userDocumentRepository,
                        ESProducer esProducer, DropboxService dropboxService) {
         this.userRepository = userRepository;
-        this.userDocumentRepository = userDocumentRepository;
         this.esProducer = esProducer;
         this.dropboxService = dropboxService;
     }
-
-    public String syncWithEs() {
-        List<User> users = userRepository.findAll();
-        userDocumentRepository.deleteAll();
-        esProducer.sendUserDocumentList(UserDocumentMapper.map(users));
-        return "successfully synchronized";
-
-    }
-
 
     @Cacheable(value = "retrieveAllUsers", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize")
     public Map<String, Object> retrieveAllUsers(int pageNumber, int pageSize) {
@@ -73,7 +59,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User with username: " + username + " not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     // Admin ops
