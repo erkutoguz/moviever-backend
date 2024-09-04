@@ -5,13 +5,12 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieDocumentResponse;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -26,8 +25,6 @@ import java.util.Map;
 @Service
 public class ElasticsearchService {
 
-
-    private static final Logger log = LoggerFactory.getLogger(ElasticsearchService.class);
     private final ElasticsearchClient elasticsearchClient;
     public ElasticsearchService(ElasticsearchClient elasticsearchClient) {
         this.elasticsearchClient = elasticsearchClient;
@@ -209,6 +206,27 @@ public class ElasticsearchService {
 
         try {
             elasticsearchClient.index(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateMovieDocument(UpdateMovieDocumentRequest request, Long movieId) {
+        Map<String, JsonData> map = new HashMap<>();
+        map.put("posterUrl", JsonData.of(request.posterUrl()));
+        map.put("releaseYear", JsonData.of(request.releaseYear()));
+        map.put("title", JsonData.of(request.title()));
+        map.put("categories", JsonData.of(request.categories()));
+        UpdateRequest<MovieDocument, Boolean> updateRequest = UpdateRequest.of(u -> u
+                .script(s -> s
+                        .inline(is -> is
+                                .params(map)
+                                .source("ctx._source.posterUrl=params.posterUrl; ctx._source.title=params.title; ctx._source.releaseYear=params.releaseYear; ctx._source.categories=params.categories")))
+                .index("movies")
+                .id(movieId.toString())
+        );
+        try {
+            elasticsearchClient.update(updateRequest, Type.getType(UserDocument.class).getClass());
         } catch (Exception e) {
             e.printStackTrace();
         }

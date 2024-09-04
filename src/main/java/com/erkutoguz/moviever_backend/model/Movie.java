@@ -210,6 +210,10 @@ public class Movie {
         this.categories.add(category);
         category.addMovie(this);
     }
+
+    public void removeCategory(Category category) {
+        this.categories.remove(category);
+    }
     public void addView() {
         this.viewCount++;
     }

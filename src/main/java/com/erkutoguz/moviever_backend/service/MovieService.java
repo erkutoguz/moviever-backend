@@ -1,8 +1,9 @@
 package com.erkutoguz.moviever_backend.service;
 
-import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
+import com.erkutoguz.moviever_backend.dto.response.CategoryResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponse;
 import com.erkutoguz.moviever_backend.dto.response.MovieResponseWithDetails;
 import com.erkutoguz.moviever_backend.dto.response.ReviewResponse;
@@ -25,11 +26,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -38,21 +36,21 @@ public class MovieService {
     private final CategoryRepository categoryRepository;
     private final WatchlistRepository watchlistRepository;
     private final ESProducer esProducer;
-    private final DropboxService dropboxService;
     private final ReviewRepository reviewRepository;
+    private final CloudinaryService cloudinaryService;
     public MovieService(MovieRepository movieRepository,
                         UserRepository userRepository,
                         CategoryRepository categoryRepository,
                         WatchlistRepository watchlistRepository,
                         ESProducer esProducer,
-                        DropboxService dropboxService, ReviewRepository reviewRepository) {
+                        ReviewRepository reviewRepository, CloudinaryService cloudinaryService) {
         this.movieRepository = movieRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.watchlistRepository = watchlistRepository;
         this.esProducer = esProducer;
-        this.dropboxService = dropboxService;
         this.reviewRepository = reviewRepository;
+        this.cloudinaryService = cloudinaryService;
     }
 
     public MovieResponse retrieveMovie(Long movieId, String username) {
@@ -168,7 +166,7 @@ public class MovieService {
 
     //ADMIN OPS
     @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
-    public void createMovie(CreateMovieRequest request) throws IOException, DbxException {
+    public void createMovie(CreateMovieRequest request) {
         Optional<Movie> movieExists = movieRepository.findByTitleIgnoreCase(request.title());
         if(movieExists.isPresent()) {
             throw new DuplicateResourceException("Movie already exist");
@@ -176,20 +174,11 @@ public class MovieService {
         Movie movie = builtMovie(request);
         String posterUrl = "";
         if(request.poster() != null) {
-            posterUrl = dropboxService.uploadImage("moviePoster", request.title(), request.poster());
+            posterUrl = cloudinaryService.uploadMoviePoster(request.poster(), request.title());
         }
         movie.setPictureUrl(posterUrl);
         Movie savedMovie = movieRepository.save(movie);
         esProducer.sendMovieDocument(MovieDocumentMapper.map(savedMovie));
-    }
-
-    @CacheEvict(value = {"newMovies","allMovies", "mostLikedMovies", "mostViewedMovies"}, allEntries = true)
-    public void createMultipleMovies(List<CreateMovieRequest> request) {
-        request.forEach(r -> {
-            if(movieRepository.findByTitleIgnoreCase(r.title()).isPresent()) throw new DuplicateResourceException("Movie already exist");
-        });
-        List<Movie> movies = request.stream().map(this::builtMovie).toList();
-        List<Movie> savedMovies = movieRepository.saveAll(movies);
     }
 
     private Movie builtMovie(CreateMovieRequest request) {
@@ -218,6 +207,7 @@ public class MovieService {
             user.unlikeMovie(movie);
             userRepository.save(user);
         }
+        cloudinaryService.deleteMoviePoster(movie.getTitle());
         esProducer.sendDeleteMovieMessage(movieId);
         movieRepository.delete(movie);
     }
@@ -226,12 +216,45 @@ public class MovieService {
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        movie.setPictureUrl(request.pictureUrl());
+        String pictureUrl = cloudinaryService.uploadMoviePoster(request.poster(),movie.getTitle());
+        movie.setPictureUrl(pictureUrl);
         movie.setRating(request.rating());
+        movie.setTrailerUrl(request.trailerUrl());
+
+        Set<Category> movieOldCategories = new HashSet<>();
+
+        movie.getCategories().forEach(c -> {
+            if(!request.categories().contains(c.getCategoryName())) {
+                c.removeMovie(movie);
+                movieOldCategories.add(c);
+            }
+        });
+
+        categoryRepository.saveAll(movieOldCategories);
+
+        request.categories().forEach(categoryType -> {
+            movie.getCategories().forEach(c -> {
+                if(!c.getCategoryName().name().equals(categoryType.name())){
+                    movie.removeCategory(c);
+                    movie.addCategory(categoryRepository.findByCategoryName(categoryType));
+                } else {
+
+                }
+            });
+            movie.addCategory(categoryRepository.findByCategoryName(categoryType));
+        });
+
         movie.setDescription(request.description());
         movie.setTitle(request.title());
         movie.setDirector(request.director());
         movie.setReleaseYear(request.releaseYear());
         movieRepository.save(movie);
+        esProducer.sendUpdateMovieDocumentMessage(
+                new UpdateMovieDocumentRequest(movie.getTitle(),
+                        movie.getPictureUrl(),movie.getReleaseYear(),
+                        movie.getCategories().stream()
+                                .map(c ->
+                                        new CategoryResponse(c.getCategoryName().toString()))
+                                .collect(Collectors.toSet())),movieId);
     }
 }

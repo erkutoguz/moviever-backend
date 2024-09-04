@@ -1,11 +1,16 @@
 package com.erkutoguz.moviever_backend.kafka.producer;
 
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentAndId;
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class ESProducer {
@@ -18,6 +23,10 @@ public class ESProducer {
     public void sendMovieDocument(MovieDocument movieDocument) {
         kafkaTemplate.send("add-movie-document",movieDocument);
     }
+    public void sendUpdateMovieDocumentMessage(UpdateMovieDocumentRequest updateMovieDocument, Long movieId){
+        kafkaTemplate.send("update-movie-document", new UpdateMovieDocumentAndId(updateMovieDocument, movieId));
+    }
+
     public void sendDeleteMovieMessage(long movieId) {
         kafkaTemplate.send("delete-movie-document", movieId);
     }

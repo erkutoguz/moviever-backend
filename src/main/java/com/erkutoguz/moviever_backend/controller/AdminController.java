@@ -1,6 +1,5 @@
 package com.erkutoguz.moviever_backend.controller;
 
-import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.CreateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
@@ -9,6 +8,7 @@ import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.exception.BadRequestException;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import com.erkutoguz.moviever_backend.service.AdminService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
@@ -79,7 +79,7 @@ public class AdminController {
                                              @RequestParam("categories") String categoriesJson,
                                              @RequestPart("poster") MultipartFile poster,
                                              @RequestParam("description") String description)
-            throws IOException, DbxException {
+            throws IOException {
         Set<CategoryType> categories = new ObjectMapper()
                 .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
         CreateMovieRequest request = new CreateMovieRequest(title,director,releaseYear,description, poster,trailerUrl,rating,categories);
@@ -99,12 +99,6 @@ public class AdminController {
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
-    @PostMapping("/movies-multiple")
-    public ResponseEntity<Void> createMultipleMovies(@Valid @RequestBody List<CreateMovieRequest> request) {
-        adminService.createMultipleMovies(request);
-        return new ResponseEntity<Void>(HttpStatus.CREATED);
-    }
-
     @DeleteMapping("/movies/{movieId}")
     public ResponseEntity<Void> deleteMovie(@PathVariable Long movieId){
         adminService.deleteMovie(movieId);
@@ -112,7 +106,31 @@ public class AdminController {
     }
 
     @PatchMapping("/movies/{movieId}")
-    public ResponseEntity<Void> updateMovie(@PathVariable Long movieId,@Valid @RequestBody UpdateMovieRequest request) {
+    public ResponseEntity<Void> updateMovie(@PathVariable Long movieId,
+                                            @RequestParam("title") String title,
+                                            @RequestParam("director") String director,
+                                            @RequestParam("releaseYear") int releaseYear,
+                                            @RequestParam("trailerUrl") String trailerUrl,
+                                            @RequestParam("rating") double rating,
+                                            @RequestParam("categories") String categoriesJson,
+                                            @RequestPart("poster") MultipartFile poster,
+                                            @RequestParam("description") String description) throws JsonProcessingException {
+        Set<CategoryType> categories = new ObjectMapper()
+                .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
+        UpdateMovieRequest request = new UpdateMovieRequest(title,director,releaseYear,description,
+                poster,trailerUrl,rating,categories);
+        Set<ConstraintViolation<UpdateMovieRequest>> violations = validator.validate(request);
+        if (!violations.isEmpty()) {
+            StringBuilder violationMessages = new StringBuilder();
+
+            for (ConstraintViolation<UpdateMovieRequest> violation : violations) {
+                violationMessages.append(violation.getPropertyPath())
+                        .append(" : ")
+                        .append(violation.getMessage())
+                        .append("\n");
+            }
+            throw new BadRequestException(violationMessages.toString());
+        }
         adminService.updateMovie(movieId, request);
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }

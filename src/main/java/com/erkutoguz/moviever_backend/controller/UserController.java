@@ -1,6 +1,5 @@
 package com.erkutoguz.moviever_backend.controller;
 
-import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
@@ -14,8 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -39,8 +36,7 @@ public class UserController {
     }
 
     @PostMapping("/profile/avatar")
-    public ResponseEntity<Void> uploadProfilePicture(@RequestParam("image") MultipartFile multipartFile)
-            throws IOException, DbxException {
+    public ResponseEntity<Void> uploadProfilePicture(@RequestParam("image") MultipartFile multipartFile){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userService.uploadProfilePicture(authentication.getName(),multipartFile);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
@@ -52,14 +48,14 @@ public class UserController {
     }
 
     @DeleteMapping("/profile/avatar")
-    public ResponseEntity<Void> removeProfilePicture() throws IOException, DbxException {
+    public ResponseEntity<Void> removeProfilePicture(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userService.deleteProfilePicture(authentication.getName());
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/me")
-    public UserDetailsResponse retrieveProfile() throws IOException {
+    public UserDetailsResponse retrieveProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return userService.retrieveProfile(authentication.getName());
     }

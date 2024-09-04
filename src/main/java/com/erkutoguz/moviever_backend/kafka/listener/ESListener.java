@@ -1,5 +1,7 @@
 package com.erkutoguz.moviever_backend.kafka.listener;
 
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentAndId;
+import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
@@ -7,6 +9,8 @@ import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.service.ElasticsearchService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+
+import java.util.Map;
 
 @Service
 public class ESListener {
@@ -19,6 +23,11 @@ public class ESListener {
     @KafkaListener(groupId = "esKafkaGroup", topics = "add-movie-document")
     public void consumeAddMovieMessage(MovieDocument movieDocument) {
         elasticsearchService.createMovieDocument(movieDocument);
+    }
+
+    @KafkaListener(groupId = "esKafkaGroup", topics = "update-movie-document")
+    public void consumeUpdateMovieMessage(UpdateMovieDocumentAndId request) {
+        elasticsearchService.updateMovieDocument(request.request(), request.movieId());
     }
     @KafkaListener(groupId = "esKafkaGroup", topics = "delete-movie-document")
     public void consumeDeleteMovieMessage(long movieId) {

@@ -34,10 +34,16 @@
 
 		<!--cloud storage-->
 		<dependency>
-			<groupId>com.dropbox.core</groupId>
-			<artifactId>dropbox-core-sdk</artifactId>
-			<version>5.4.0</version>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http45</artifactId>
+			<version>1.39.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-taglib</artifactId>
+			<version>1.9.1</version>
+		</dependency>
+
 		<!--cloud storage-->
 
 		<!--actuator-->

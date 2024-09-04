@@ -1,6 +1,5 @@
 package com.erkutoguz.moviever_backend.service;
 
-import com.dropbox.core.DbxException;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserProfileResponse;
@@ -22,19 +21,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ESProducer esProducer;
-    private final DropboxService dropboxService;
+    private final CloudinaryService cloudinaryService;
     public UserService(UserRepository userRepository,
-                       ESProducer esProducer, DropboxService dropboxService) {
+                       ESProducer esProducer, CloudinaryService cloudinaryService) {
         this.userRepository = userRepository;
         this.esProducer = esProducer;
-        this.dropboxService = dropboxService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Cacheable(value = "retrieveAllUsers", key = "#root.methodName + '-' + #pageNumber + '-' + #pageSize")
@@ -50,7 +50,7 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public UserDetailsResponse retrieveProfile(String username) throws IOException {
+    public UserDetailsResponse retrieveProfile(String username){
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return new UserDetailsResponse(user.getFirstname(), user.getLastname(),user.getPictureUrl(), user.getAbout());
@@ -68,23 +68,26 @@ public class UserService implements UserDetailsService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         esProducer.sendDeleteUserMessage(userId);
+        cloudinaryService.deleteUserAvatar(user.getUsername());
         userRepository.delete(user);
     }
 
     @CacheEvict(value = "retrieveAllUsers", allEntries = true)
-    public void uploadProfilePicture(String name, MultipartFile multipartFile) throws IOException, DbxException {
+    public void uploadProfilePicture(String name, MultipartFile multipartFile) {
         User user = (User) userRepository.findByUsername(name)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        String profileUrl = dropboxService.uploadImage("userProfile",name,multipartFile);
+        String profileUrl = cloudinaryService.uploadUserAvatar(multipartFile, user.getUsername());
         user.setPictureUrl(profileUrl);
         userRepository.save(user);
     }
 
     @CacheEvict(value = "retrieveAllUsers", allEntries = true)
-    public void deleteProfilePicture(String name) throws DbxException {
+    public void deleteProfilePicture(String name) {
         User user = (User) userRepository.findByUsername(name)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        dropboxService.deleteImage(user.getPictureUrl());
+        user.setPictureUrl("");
+        userRepository.save(user);
+        cloudinaryService.deleteUserAvatar(user.getUsername());
     }
 
     @CacheEvict(value = "retrieveAllUsers", allEntries = true)
