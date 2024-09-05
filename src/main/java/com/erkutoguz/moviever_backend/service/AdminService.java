@@ -7,6 +7,7 @@ import com.erkutoguz.moviever_backend.dto.response.AdminIpAddressesResponse;
 import com.erkutoguz.moviever_backend.dto.response.CategoryMovieCountResponse;
 import com.erkutoguz.moviever_backend.model.CategoryType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,9 @@ public class AdminService {
 
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         movieService.updateMovie(movieId, request);
+    }
+    public void updateMoviePoster(MultipartFile poster, Long movieId) {
+        movieService.updateMoviePoster(poster, movieId);
     }
 
     public void deleteUser(Long userId) {

@@ -21,8 +21,6 @@ public record UpdateMovieRequest(
         @NotBlank(message = "Description can not be empty")
         String description,
 
-        MultipartFile poster,
-
         @NotBlank(message = "Trailer can not be empty")
         String trailerUrl,
 

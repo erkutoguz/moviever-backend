@@ -1,16 +1,19 @@
 package com.erkutoguz.moviever_backend.controller;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserRequestWithPassword;
 import com.erkutoguz.moviever_backend.dto.response.LikedReviewsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserDetailsResponse;
 import com.erkutoguz.moviever_backend.dto.response.UserProfileResponse;
 import com.erkutoguz.moviever_backend.service.AuthenticationService;
 import com.erkutoguz.moviever_backend.service.ReviewService;
 import com.erkutoguz.moviever_backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,8 +32,14 @@ public class UserController {
         this.authenticationService = authenticationService;
     }
 
+    @PutMapping("/me/wp")
+    public ResponseEntity<String> updateUserWithPassword(@Valid @RequestBody UpdateUserRequestWithPassword request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authenticationService.updateUserWithPassword(authentication.getName(), request);
+    }
+
     @PutMapping("/me")
-    public ResponseEntity<String> updateUser(@RequestBody UpdateUserRequest request) {
+    public ResponseEntity<String> updateUser(@Valid @RequestBody UpdateUserRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authenticationService.updateUser(authentication.getName(), request);
     }

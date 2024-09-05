@@ -41,11 +41,6 @@ public class AuthenticationController {
         return authenticationService.loginUser(request, clientIpAddress);
     }
 
-    @PostMapping("/userdoc")
-    public String userDoc(@RequestBody UserDocument userDocument){
-        return "created";
-    }
-
     @GetMapping("/verify")
     public ResponseEntity<String> verifyRegistration(@RequestParam String otp) {
        boolean isValid =  authenticationService.verifyRegistration(otp);

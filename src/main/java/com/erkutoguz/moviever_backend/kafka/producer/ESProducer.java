@@ -2,15 +2,13 @@ package com.erkutoguz.moviever_backend.kafka.producer;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentAndId;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
 import com.erkutoguz.moviever_backend.model.UserDocument;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 public class ESProducer {
@@ -34,6 +32,9 @@ public class ESProducer {
 
     public void sendUserDocument(UserDocument userDocument) {
         kafkaTemplate.send("add-user-document", userDocument);
+    }
+    public void sendUpdateUserDocument(UpdateUserDocumentRequest userDocument) {
+        kafkaTemplate.send("update-user-document", userDocument);
     }
     public void updateUserDocumentStatus(UpdateUserDocumentStatusRequest request) {
         kafkaTemplate.send("update-user-document-status", request);

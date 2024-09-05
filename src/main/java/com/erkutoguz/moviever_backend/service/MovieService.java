@@ -16,6 +16,8 @@ import com.erkutoguz.moviever_backend.util.DetailedMovieMapper;
 import com.erkutoguz.moviever_backend.util.MovieDocumentMapper;
 import com.erkutoguz.moviever_backend.util.MovieMapper;
 import com.erkutoguz.moviever_backend.util.SortReviewResponseByLikeCount;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -25,12 +27,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
+    private static final Logger log = LoggerFactory.getLogger(MovieService.class);
     private final MovieRepository movieRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
@@ -216,33 +220,29 @@ public class MovieService {
     public void updateMovie(Long movieId, UpdateMovieRequest request) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
-        String pictureUrl = cloudinaryService.uploadMoviePoster(request.poster(),movie.getTitle());
-        movie.setPictureUrl(pictureUrl);
+
         movie.setRating(request.rating());
         movie.setTrailerUrl(request.trailerUrl());
 
-        Set<Category> movieOldCategories = new HashSet<>();
+        Set<Category> newCats = new HashSet<>();
+        request.categories().forEach(c -> {
+            Category cat = categoryRepository.findByCategoryName(c);
+            newCats.add(cat);
+        });
 
-        movie.getCategories().forEach(c -> {
-            if(!request.categories().contains(c.getCategoryName())) {
-                c.removeMovie(movie);
-                movieOldCategories.add(c);
+        for (Category c : movie.getCategories()){
+            if(!newCats.contains(c)){
+                c.getMovies().remove(movie);
+                movie.getCategories().remove(c);
             }
-        });
+        }
 
-        categoryRepository.saveAll(movieOldCategories);
-
-        request.categories().forEach(categoryType -> {
-            movie.getCategories().forEach(c -> {
-                if(!c.getCategoryName().name().equals(categoryType.name())){
-                    movie.removeCategory(c);
-                    movie.addCategory(categoryRepository.findByCategoryName(categoryType));
-                } else {
-
-                }
-            });
-            movie.addCategory(categoryRepository.findByCategoryName(categoryType));
-        });
+        for(Category c : newCats){
+            if(!movie.getCategories().contains(c)){
+                movie.getCategories().add(c);
+                c.getMovies().add(movie);
+            }
+        }
 
         movie.setDescription(request.description());
         movie.setTitle(request.title());
@@ -256,5 +256,13 @@ public class MovieService {
                                 .map(c ->
                                         new CategoryResponse(c.getCategoryName().toString()))
                                 .collect(Collectors.toSet())),movieId);
+    }
+
+    public void updateMoviePoster(MultipartFile poster, Long movieId){
+        Movie movie = movieRepository.findById(movieId)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found"));
+        String pictureUrl = cloudinaryService.uploadMoviePoster(poster, movie.getTitle());
+        movie.setPictureUrl(pictureUrl);
+        movieRepository.save(movie);
     }
 }

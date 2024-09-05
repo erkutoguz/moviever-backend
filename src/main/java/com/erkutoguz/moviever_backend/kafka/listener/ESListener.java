@@ -1,7 +1,7 @@
 package com.erkutoguz.moviever_backend.kafka.listener;
 
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentAndId;
-import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentStatusRequest;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
@@ -9,8 +9,6 @@ import com.erkutoguz.moviever_backend.model.UserDocument;
 import com.erkutoguz.moviever_backend.service.ElasticsearchService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 
 @Service
 public class ESListener {
@@ -38,9 +36,13 @@ public class ESListener {
     public void consumeAddUserMessage(UserDocument userDocument) {
         elasticsearchService.createUserDocument(userDocument);
     }
+    @KafkaListener(groupId = "esKafkaGroup", topics = "update-user-document")
+    public void consumeUpdateUserMessage(UpdateUserDocumentRequest request) {
+        elasticsearchService.updateUserDocumentByUserId(request);
+    }
     @KafkaListener(groupId = "esKafkaGroup", topics = "update-user-document-status")
     public void consumeUpdateUserStatusMessage(UpdateUserDocumentStatusRequest request) {
-        elasticsearchService.updateUserDocumentByUserId(request.newStatus(), request.userId());
+        elasticsearchService.updateUserDocumentStatusByUserId(request.newStatus(), request.userId());
     }
     @KafkaListener(groupId = "esKafkaGroup", topics = "delete-user-document")
     public void consumeDeleteUserMessage(long userId) {

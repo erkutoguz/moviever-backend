@@ -105,6 +105,14 @@ public class AdminController {
         return new ResponseEntity<Void>(HttpStatus.CREATED);
     }
 
+    @PatchMapping("/movies/{movieId}/poster")
+    public ResponseEntity<Void> updateMoviePoster(@PathVariable Long movieId,
+                                                  @RequestPart("poster") MultipartFile poster) {
+        adminService.updateMoviePoster(poster, movieId);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+
+    }
+
     @PatchMapping("/movies/{movieId}")
     public ResponseEntity<Void> updateMovie(@PathVariable Long movieId,
                                             @RequestParam("title") String title,
@@ -113,12 +121,11 @@ public class AdminController {
                                             @RequestParam("trailerUrl") String trailerUrl,
                                             @RequestParam("rating") double rating,
                                             @RequestParam("categories") String categoriesJson,
-                                            @RequestPart("poster") MultipartFile poster,
                                             @RequestParam("description") String description) throws JsonProcessingException {
         Set<CategoryType> categories = new ObjectMapper()
                 .readValue(categoriesJson, new TypeReference<Set<CategoryType>>() {});
         UpdateMovieRequest request = new UpdateMovieRequest(title,director,releaseYear,description,
-                poster,trailerUrl,rating,categories);
+                trailerUrl,rating,categories);
         Set<ConstraintViolation<UpdateMovieRequest>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
             StringBuilder violationMessages = new StringBuilder();
@@ -132,7 +139,7 @@ public class AdminController {
             throw new BadRequestException(violationMessages.toString());
         }
         adminService.updateMovie(movieId, request);
-        return new ResponseEntity<Void>(HttpStatus.CREATED);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping("/users/ip-addresses")

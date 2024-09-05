@@ -158,7 +158,8 @@ public class AuthenticationService {
     }
 
     @CacheEvict(value = "retrieveAllUsers", allEntries = true)
-    public ResponseEntity<String> updateUser(String username, UpdateUserRequest request) {
+    public ResponseEntity<String> updateUserWithPassword(String username,
+                                                         UpdateUserRequestWithPassword request) {
         User user = (User) userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         if(request.firstname() != null && !request.firstname().isEmpty()) {
@@ -171,7 +172,27 @@ public class AuthenticationService {
         if(request.password() != null && !request.password().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.password()));
         }
+
         userRepository.save(user);
+        esProducer.sendUpdateUserDocument(new UpdateUserDocumentRequest(user.getId(), user.getFirstname(), user.getLastname()));
+        return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
+    }
+
+    @CacheEvict(value = "retrieveAllUsers", allEntries = true)
+    public ResponseEntity<String> updateUser(String username,
+                                                         UpdateUserRequest request) {
+        User user = (User) userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(request.firstname() != null && !request.firstname().isEmpty()) {
+            user.setFirstname(request.firstname());
+        }
+        if(request.lastname() != null && !request.lastname().isEmpty()) {
+            user.setLastname(request.lastname());
+        }
+        user.setAbout(request.about());
+
+        userRepository.save(user);
+        esProducer.sendUpdateUserDocument(new UpdateUserDocumentRequest(user.getId(), user.getFirstname(), user.getLastname()));
         return new ResponseEntity<String>("User successfully updated", HttpStatus.OK );
     }
 

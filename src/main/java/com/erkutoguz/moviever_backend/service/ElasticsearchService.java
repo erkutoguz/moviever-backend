@@ -6,6 +6,7 @@ import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.JsonData;
 import com.erkutoguz.moviever_backend.dto.request.UpdateMovieDocumentRequest;
+import com.erkutoguz.moviever_backend.dto.request.UpdateUserDocumentRequest;
 import com.erkutoguz.moviever_backend.dto.response.MovieDocumentResponse;
 import com.erkutoguz.moviever_backend.model.MovieDocument;
 import com.erkutoguz.moviever_backend.model.ReviewDocument;
@@ -261,7 +262,28 @@ public class ElasticsearchService {
         }
     }
 
-    public void updateUserDocumentByUserId(boolean newStatus, Long userId) {
+    public void updateUserDocumentByUserId(UpdateUserDocumentRequest updateRequest) {
+        Map<String, JsonData> map = new HashMap<>();
+        map.put("firstName", JsonData.of(updateRequest.firstName()));
+        map.put("lastName", JsonData.of(updateRequest.lastName()));
+
+        UpdateRequest<UserDocument, Boolean> request = UpdateRequest.of(u -> u
+                .script(s -> s
+                        .inline(is -> is
+                                .params(map)
+                                .source("ctx._source.firstName=params.firstName; ctx._source.lastName=params.lastname")))
+                .index("users")
+                .id(updateRequest.userId().toString())
+        );
+        try {
+            elasticsearchClient.update(request, Type.getType(UserDocument.class).getClass());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void updateUserDocumentStatusByUserId(boolean newStatus, Long userId) {
         UpdateRequest<UserDocument, Boolean> request = UpdateRequest.of(u -> u
                 .script(s -> s
                         .inline(is -> is
