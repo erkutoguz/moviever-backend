@@ -50,8 +50,8 @@ PUT /movies
         }
       },
       "refresh_interval": "3s",
-      "number_of_shards": "3",
-      "number_of_replicas": "2"
+      "number_of_shards": "1",
+      "number_of_replicas": "1"
     }
   }
 }
