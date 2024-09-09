@@ -1,0 +1,68 @@
+PUT /reviews
+{
+  "mappings": {
+      "properties" : {
+        "_class" : {
+          "type" : "keyword",
+          "index" : false,
+          "doc_values" : false
+        },
+        "createdAt" : {
+          "type" : "date"
+        },
+        "id" : {
+          "type" : "long"
+        },
+        "userId":{
+          "type":"long"
+        },
+        "likeCount" : {
+          "type" : "long"
+        },
+        "movieId" : {
+          "type" : "long"
+        },
+        "movieName" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "review" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        },
+        "username" : {
+          "type" : "text",
+          "fields" : {
+            "keyword" : {
+              "type" : "keyword",
+              "ignore_above" : 256
+            }
+          }
+        }
+      }
+    },
+  "settings": {
+    "index": {
+      "routing": {
+        "allocation": {
+          "include": {
+            "_tier_preference": "data_content"
+          }
+        }
+      },
+      "refresh_interval": "3s",
+      "number_of_shards": "3",
+      "number_of_replicas": "2"
+    }
+  }
+}
