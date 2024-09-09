@@ -41,3 +41,10 @@ This is the backend service for a **Moviever**. The backend is built with **Java
 - Kafka
 - Elasticsearch
 - Redis
+
+### docker-compose.yml
+![docker-compose.yml](./docker-compose.yml.png)
+
+### docker-compose.yml
+![application.yml](./application.yml.png)
+
