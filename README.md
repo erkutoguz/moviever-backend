@@ -1,4 +1,4 @@
-# 🎬 Film Review and Rating Backend
+# 🎬 Moviever Backend
 
 This is the backend service for a **Moviever**. The backend is built with **Java (Spring Boot)** and features user authentication, film reviews, user watchlist and rating management. It also leverages **PostgreSQL** for data storage and **Elasticsearch** for efficient search capabilities.
 
@@ -42,33 +42,33 @@ This is the backend service for a **Moviever**. The backend is built with **Java
 - Elasticsearch
 
 ### docker-compose.yml
-services:
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
-    container_name: moviever_elasticsearch
-    ports:
-      - '9200:9200'
-      - '9300:9300'
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.security.enabled=false
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    networks:
-      - moviever-backend-network
-    volumes:
-      - moviever-elasticsearch-data:/usr/share/elasticsearch/data
+- services:
+  - elasticsearch:
+  -  image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+  -  container_name: moviever_elasticsearch
+  -  ports:
+  -    - '9200:9200'
+  -    - '9300:9300'
+  -  environment:
+  -    - discovery.type=single-node
+  -    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  -    - xpack.security.enabled=false
+  -  ulimits:
+  -    memlock:
+  -      soft: -1
+  -      hard: -1
+  -  networks:
+  -    - moviever-backend-network
+  -  volumes:
+  -    - moviever-elasticsearch-data:/usr/share/elasticsearch/data
       
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.15.0
-    container_name: moviever_kibana
-    ports:
-      - "5601:5601"
-    networks:
-      - moviever-backend-network
+  - kibana:
+   - image: docker.elastic.co/kibana/kibana:8.15.0
+   - container_name: moviever_kibana
+   - ports:
+   -   - "5601:5601"
+   - networks:
+   -   - moviever-backend-network
 
   redis:
     image: redis:latest
