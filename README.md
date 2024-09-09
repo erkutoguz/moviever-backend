@@ -43,8 +43,8 @@ This is the backend service for a **Moviever**. The backend is built with **Java
 - Redis
 
 ### docker-compose.yml
-![docker-compose.yml](./docker-compose.yml.png)
+![docker-compose.yml](https://github.com/erkutoguz/moviever-backend/blob/main/docker-compose.yml.jpg)
 
 ### docker-compose.yml
-![application.yml](./application.yml.png)
+![application.yml](https://github.com/erkutoguz/moviever-backend/blob/main/application.yml.jpg)
 
