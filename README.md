@@ -42,6 +42,11 @@ This is the backend service for a **Moviever**. The backend is built with **Java
 - Elasticsearch
 - Redis
 
+### Elasticsearch Indexes 
+![user-index](https://github.com/erkutoguz/moviever-backend/blob/main/user%20index.png)
+![movie-index](https://github.com/erkutoguz/moviever-backend/blob/main/movie%20index.png)
+![review-index](https://github.com/erkutoguz/moviever-backend/blob/main/review%20index.png)
+
 ### docker-compose.yml
 ![docker-compose.yml](https://github.com/erkutoguz/moviever-backend/blob/main/docker-compose.yml.jpg)
 
