@@ -1,4 +1,4 @@
-PUT /
+PUT /movies
 {
   "mappings": {
     "properties": {
